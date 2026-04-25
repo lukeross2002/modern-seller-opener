@@ -22,7 +22,7 @@ export default function ToolPage() {
           Build your <span className="gradient-text">opener.</span>
         </h1>
         <p className="mt-5 text-[17px] md:text-[19px] text-[color:var(--muted-soft)] max-w-2xl mx-auto leading-[1.55]">
-          Drop in your prospect. We search the live web for fresh signals.
+          Drop in your prospect&apos;s name and company. We search the live web for fresh signals.
           Three openers, each anchored in a real, dated trigger.
         </p>
       </section>

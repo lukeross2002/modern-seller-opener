@@ -20,8 +20,8 @@ export default function Home() {
             Openers <span className="gradient-text">that actually book.</span>
           </h1>
           <p className="mt-7 text-[17px] md:text-[19px] text-[color:var(--muted-soft)] max-w-2xl leading-[1.55]">
-            Drop in your prospect&apos;s company. Get 3 cold-call openers tailored to <em>them</em> —
-            anchored in real research about their role, company, and recent moves.
+            Drop in your prospect&apos;s name and company. Get 3 cold-call openers tailored to <em>them</em> —
+            anchored in real, dated triggers from live web research.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link href="/tool" className="btn-primary">
@@ -57,7 +57,7 @@ export default function Home() {
         <div className="text-center mb-14">
           <p className="eyebrow mb-3">How it works</p>
           <h2 className="text-3xl md:text-5xl font-bold tracking-[-0.03em] max-w-3xl mx-auto leading-[1.05]">
-            Drop in their company. <span className="gradient-text">Get 3 tailored openers.</span>
+            Drop in their name + company. <span className="gradient-text">Get 3 tailored openers.</span>
           </h2>
         </div>
 
@@ -65,8 +65,8 @@ export default function Home() {
           {[
             {
               step: "01",
-              title: "Drop their company",
-              body: "Just the website (e.g. acme.com). Add the prospect's first name and role for sharper targeting.",
+              title: "Drop their name + company",
+              body: "Their full name (so we can find the actual person), the company website, and what you sell. 10 seconds, three fields.",
             },
             {
               step: "02",

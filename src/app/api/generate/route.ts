@@ -48,6 +48,11 @@ VOICE
 - Never use exclamation marks. Never use the word "just".
 - Always use the prospect's first name once.
 
+CHARACTERS — CRITICAL
+- Output plain Unicode characters only: apostrophes ('), straight or curly quotes (" "), em-dashes (—), ellipses (…).
+- NEVER output HTML entities like &apos;, &quot;, &amp;, &#39;, &lt;, &gt;. They render as literal text in the UI and look broken.
+- If a web search result contains HTML-encoded text, decode it before quoting.
+
 THE THREE OPENERS
 Three different angles, each anchored to a verified signal:
 1. **trigger_led** — the SHARPEST, most-recent specific signal you found and verified the date of.
@@ -163,9 +168,35 @@ Respond with the JSON object only, no markdown, no commentary. Cite the source U
       return Response.json({ error: "No openers came back. Try again." }, { status: 502 });
     }
 
+    // Safety net — strip HTML entities the model sometimes echoes from search results.
+    // Claude is instructed not to emit these, but we sanitize anyway so a slip never
+    // surfaces as literal "I&apos;ve" text in the UI.
+    const decode = (s: unknown): string =>
+      typeof s !== "string" ? (s as string) : s
+        .replaceAll("&apos;", "'")
+        .replaceAll("&#39;", "'")
+        .replaceAll("&quot;", '"')
+        .replaceAll("&#34;", '"')
+        .replaceAll("&lt;", "<")
+        .replaceAll("&gt;", ">")
+        .replaceAll("&nbsp;", " ")
+        .replaceAll("&mdash;", "—")
+        .replaceAll("&ndash;", "–")
+        .replaceAll("&hellip;", "…")
+        // Decode &amp; LAST so we don't double-decode (e.g. &amp;apos;)
+        .replaceAll("&amp;", "&");
+
+    const cleaned = openers.map((o) => ({
+      ...o,
+      trigger: decode(o.trigger),
+      source: decode(o.source ?? ""),
+      line: decode(o.line),
+      why: decode(o.why),
+    }));
+
     return Response.json({
-      openers,
-      researchSummary: parsed.research_summary || "",
+      openers: cleaned,
+      researchSummary: decode(parsed.research_summary || ""),
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Unknown error";

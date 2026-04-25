@@ -18,18 +18,24 @@ const ANGLE_LABEL: Record<string, string> = {
   problem_led: "Problem-led",
 };
 
-// Loading stages — each fires at a fixed % of the way to the cap. Total elapsed
-// is what drives the bar; messages just label what's happening.
+// Loading stages — driven by elapsed seconds (not bar %), so labels keep
+// rotating even after the bar slows toward the asymptote.
 const LOADING_STAGES = [
-  { at: 0, label: "Searching the live web for fresh signals…" },
-  { at: 0.22, label: "Reading their recent company news…" },
-  { at: 0.45, label: "Looking up the prospect by name…" },
-  { at: 0.65, label: "Verifying dates and picking the sharpest trigger…" },
-  { at: 0.82, label: "Writing your openers in voice…" },
+  { afterMs: 0,     label: "Searching the live web for fresh signals…" },
+  { afterMs: 7000,  label: "Reading their recent company news…" },
+  { afterMs: 14000, label: "Looking up the prospect by name…" },
+  { afterMs: 22000, label: "Verifying source dates…" },
+  { afterMs: 32000, label: "Picking the sharpest trigger…" },
+  { afterMs: 42000, label: "Writing your openers in voice…" },
+  { afterMs: 55000, label: "Finalizing — almost there…" },
 ];
-// Bar fills over this many ms (real calls now land at 25–40s with max_uses=2).
-// We cap at 95% until the response actually arrives, then snap to 100%.
-const LOADING_DURATION_MS = 32000;
+
+// Asymptotic curve: progress = 1 - exp(-elapsed / TIMECONSTANT).
+// Always moves, never reaches 100% until we snap it on response.
+// At t=20s → 67%, t=40s → 89%, t=60s → 96%, t=80s → 99%.
+// No "jammed at 95%" feel — the bar keeps creeping forever.
+const TIMECONSTANT_MS = 18000;
+const PROGRESS_CEILING = 0.99;
 
 export default function OpenerTool() {
   const [unlocked, setUnlocked] = useState(false);
@@ -42,7 +48,6 @@ export default function OpenerTool() {
   const [prospectFirstName, setProspectFirstName] = useState("");
   const [prospectLastName, setProspectLastName] = useState("");
   const [prospectRole, setProspectRole] = useState("");
-  const [prospectLinkedin, setProspectLinkedin] = useState("");
   const [yourOffer, setYourOffer] = useState("");
   const [extraNotes, setExtraNotes] = useState("");
 
@@ -80,11 +85,13 @@ export default function OpenerTool() {
     setStageLabel(LOADING_STAGES[0].label);
     const tick = () => {
       const elapsed = performance.now() - startRef.current;
-      const ratio = Math.min(elapsed / LOADING_DURATION_MS, 0.95);
+      // Asymptotic — keeps moving, never reaches 1.0 until we snap on response.
+      const ratio = Math.min(1 - Math.exp(-elapsed / TIMECONSTANT_MS), PROGRESS_CEILING);
       setProgress(ratio);
-      const stage = [...LOADING_STAGES].reverse().find((s) => ratio >= s.at);
+      const stage = [...LOADING_STAGES].reverse().find((s) => elapsed >= s.afterMs);
       if (stage) setStageLabel(stage.label);
-      if (ratio < 0.95) rafRef.current = requestAnimationFrame(tick);
+      // Keep ticking — even at 99%, we want sub-percent motion to look alive.
+      rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => {
@@ -126,7 +133,6 @@ export default function OpenerTool() {
     const trimmedFirstName = prospectFirstName.trim();
     const trimmedLastName = prospectLastName.trim();
     const trimmedWebsite = companyWebsite.trim();
-    const trimmedLinkedin = prospectLinkedin.trim();
     const hasNotes = extraNotes.trim().length > 0;
 
     if (!trimmedFirstName || !trimmedLastName) {
@@ -157,7 +163,6 @@ export default function OpenerTool() {
             lastName: trimmedLastName,
             role: prospectRole.trim() || undefined,
             companyWebsite: trimmedWebsite || undefined,
-            linkedinUrl: trimmedLinkedin || undefined,
           },
           fallbackProspect: hasNotes ? extraNotes : undefined,
         }),
@@ -262,12 +267,6 @@ export default function OpenerTool() {
             placeholder="Their role (optional, e.g. Head of RevOps)"
             value={prospectRole}
             onChange={(e) => setProspectRole(e.target.value)}
-          />
-          <input
-            className="input mt-3"
-            placeholder="LinkedIn URL (optional — helps disambiguate common names)"
-            value={prospectLinkedin}
-            onChange={(e) => setProspectLinkedin(e.target.value)}
           />
           <p className="mt-2 text-xs text-[color:var(--muted)]">
             Full name lets us research the actual person, not just their company.
