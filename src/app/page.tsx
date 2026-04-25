@@ -70,8 +70,8 @@ export default function Home() {
             },
             {
               step: "02",
-              title: "We pull the research",
-              body: "What the company does, headcount, key execs, the prospect's role tenure — the same dossier you'd build manually in 20 minutes.",
+              title: "We search the live web",
+              body: "Recent posts, podcasts, press, funding, exec hires — whatever's actually happening this week that you can hook into. Each opener cites its source.",
             },
             {
               step: "03",
