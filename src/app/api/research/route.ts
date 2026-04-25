@@ -97,13 +97,18 @@ export async function POST(req: Request) {
       }
     }
 
+    // If both research sources failed, return 200 with status so the tool falls through to
+    // generation using only the user-supplied inputs. This keeps the experience working
+    // even when NinjaPear is rate-limited or out of credits.
     if (!company && !employee) {
-      return Response.json(
-        {
-          error: `Couldn't pull research for ${website}. ${companyError || employeeError || ""}`.slice(0, 250),
-        },
-        { status: 404 }
-      );
+      const reason = (companyError || employeeError || "").includes("Insufficient credits")
+        ? "no_credits"
+        : "not_found";
+      return Response.json({
+        research: null,
+        status: reason,
+        website,
+      });
     }
 
     // Compose a clean research summary for the LLM

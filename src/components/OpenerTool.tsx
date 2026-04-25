@@ -99,8 +99,13 @@ export default function OpenerTool() {
     setResearchSummary("");
 
     const trimmedWebsite = companyWebsite.trim();
+    const trimmedFirstName = prospectFirstName.trim();
     const hasNotes = extraNotes.trim().length > 0;
 
+    if (!trimmedFirstName) {
+      setError("Need the prospect's first name.");
+      return;
+    }
     if (!yourOffer.trim()) {
       setError("Tell us what you sell — one short line.");
       return;
@@ -120,28 +125,19 @@ export default function OpenerTool() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             companyWebsite: trimmedWebsite,
-            prospectFirstName: prospectFirstName.trim(),
+            prospectFirstName: trimmedFirstName,
             prospectRole: prospectRole.trim(),
           }),
         });
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}));
-          if (!hasNotes) {
-            setError(body.error || "Couldn't research that company. Add some notes below and try again.");
-            setStage("idle");
-            return;
-          }
-        } else {
+        // The research endpoint now returns 200 with research:null when deep research
+        // isn't available (no credits, not found, etc). We always proceed to generate.
+        if (res.ok) {
           const data = await res.json();
-          researchPayload = data.research as Research;
+          researchPayload = (data.research as Research) || null;
           setResearch(researchPayload);
         }
-      } catch (err) {
-        if (!hasNotes) {
-          setError(err instanceof Error ? err.message : "Research call failed.");
-          setStage("idle");
-          return;
-        }
+      } catch {
+        // Non-fatal — fall through to generate without research
       }
     }
 
@@ -153,9 +149,12 @@ export default function OpenerTool() {
         body: JSON.stringify({
           research: researchPayload,
           yourOffer,
-          fallbackProspect: hasNotes
-            ? `${prospectFirstName ? "Name: " + prospectFirstName + ". " : ""}${prospectRole ? "Role: " + prospectRole + ". " : ""}${extraNotes}`
-            : undefined,
+          prospect: {
+            firstName: trimmedFirstName,
+            role: prospectRole.trim() || undefined,
+            companyWebsite: trimmedWebsite || undefined,
+          },
+          fallbackProspect: hasNotes ? extraNotes : undefined,
         }),
       });
       if (!res.ok) {
@@ -228,23 +227,24 @@ export default function OpenerTool() {
         </div>
 
         <div>
-          <p className="eyebrow mb-2">Step 2 · The prospect (optional but better)</p>
+          <p className="eyebrow mb-2">Step 2 · The prospect</p>
           <div className="grid grid-cols-2 gap-3">
             <input
               className="input"
               placeholder="First name"
               value={prospectFirstName}
               onChange={(e) => setProspectFirstName(e.target.value)}
+              required
             />
             <input
               className="input"
-              placeholder="Their role"
+              placeholder="Their role (optional)"
               value={prospectRole}
               onChange={(e) => setProspectRole(e.target.value)}
             />
           </div>
           <p className="mt-2 text-xs text-[color:var(--muted)]">
-            With both, we pull their profile too — tenure, prior roles, headline.
+            First name is the hook — every opener uses it.
           </p>
         </div>
 
@@ -311,28 +311,34 @@ export default function OpenerTool() {
 
         {stage === "done" && openers.length > 0 && (
           <>
-            {(researchSummary || research?.company?.name || research?.employee?.name) && (
-              <div className="card">
-                <p className="eyebrow mb-2">What we found</p>
+            <div className="card">
+              <p className="eyebrow mb-2">What we worked from</p>
+              {(research?.company?.name || research?.employee?.name) ? (
                 <h3 className="text-lg font-semibold tracking-[-0.01em]">
                   {research?.employee?.name || research?.company?.name || "Prospect"}
                   {research?.employee?.currentRole && ` · ${research.employee.currentRole}`}
                   {research?.employee?.currentCompany && ` @ ${research.employee.currentCompany}`}
                   {!research?.employee && research?.company?.name && research?.company?.industries?.[0] && ` · ${research.company.industries[0]}`}
                 </h3>
-                {researchSummary && (
-                  <p className="mt-2 text-[color:var(--muted-soft)] leading-relaxed">
-                    <span className="text-white font-medium">Strongest signal — </span>{researchSummary}
-                  </p>
-                )}
-                <p className="mt-3 text-xs text-[color:var(--muted)]">
-                  Source: {[
-                    research?.company && "company details",
-                    research?.employee && "prospect profile",
-                  ].filter(Boolean).join(" + ") || "manual notes"}
+              ) : (
+                <h3 className="text-lg font-semibold tracking-[-0.01em]">
+                  {prospectFirstName}{prospectRole && ` · ${prospectRole}`}{companyWebsite && ` @ ${companyWebsite}`}
+                </h3>
+              )}
+              {researchSummary && (
+                <p className="mt-2 text-[color:var(--muted-soft)] leading-relaxed">
+                  <span className="text-white font-medium">Strongest signal — </span>{researchSummary}
                 </p>
-              </div>
-            )}
+              )}
+              <p className="mt-3 text-xs text-[color:var(--muted)]">
+                Source: {[
+                  research?.company && "company details",
+                  research?.employee && "prospect profile",
+                  !research && "your inputs only",
+                  extraNotes.trim() && research && "your notes",
+                ].filter(Boolean).join(" + ") || "your inputs"}
+              </p>
+            </div>
 
             <div className="flex items-center justify-between pt-1">
               <p className="eyebrow">Your openers · {openers.length}</p>

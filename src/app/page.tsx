@@ -11,7 +11,7 @@ export default function Home() {
       <section className="relative">
         <div className="mx-auto max-w-6xl px-6 pt-16 md:pt-24 pb-24 text-center flex flex-col items-center">
           <div className="pill mb-8">
-            <span className="dot" /> FREE TOOL · BUILT BY MODERN SELLER
+            <span className="dot" /> Free tool · Built by Luke Ross, founder of modernseller.ai
           </div>
           <h1
             className="font-bold tracking-[-0.04em] max-w-4xl"
@@ -88,27 +88,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why this is free */}
+      {/* Lead-magnet honesty: this is one piece */}
       <section className="mx-auto max-w-6xl px-6 pt-28">
         <div className="grid md:grid-cols-2 gap-5">
           <div className="card">
-            <p className="eyebrow mb-3">Why it&apos;s free</p>
-            <h3 className="text-2xl font-bold tracking-[-0.02em]">A taste of the playbook.</h3>
-            <ul className="mt-5 space-y-3 text-[color:var(--muted-soft)] leading-relaxed">
-              <li className="flex gap-3"><span className="mt-1" style={{color:"#A892FF"}}>—</span>The opener is the hardest 10 seconds of any cold call. We made it the easiest.</li>
-              <li className="flex gap-3"><span className="mt-1" style={{color:"#A892FF"}}>—</span>Every opener is built from frameworks the cohort uses on live coaching calls.</li>
-              <li className="flex gap-3"><span className="mt-1" style={{color:"#A892FF"}}>—</span>Tailored to a real human, not a template. That&apos;s the whole point.</li>
-            </ul>
+            <p className="eyebrow mb-3">What this is</p>
+            <h3 className="text-2xl font-bold tracking-[-0.02em]">One piece of a bigger system.</h3>
+            <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
+              The opener is the first 10 seconds of a cold call. It&apos;s the hardest part, and the
+              part most reps wing. This tool fixes those 10 seconds.
+            </p>
+            <p className="mt-3 text-[color:var(--muted-soft)] leading-relaxed">
+              It&apos;s not the whole call. It won&apos;t teach you discovery, objections, or how to close.
+              That&apos;s by design — this is meant to be useful by itself, while pointing at where the rest lives.
+            </p>
           </div>
           <div className="card relative overflow-hidden">
             <div className="absolute inset-0 opacity-50 pointer-events-none" style={{
               background: "radial-gradient(ellipse at top right, rgba(141,123,255,0.18), transparent 60%)",
             }} />
-            <p className="eyebrow mb-3">Want the full thing?</p>
+            <p className="eyebrow mb-3">Where the rest lives</p>
             <h3 className="text-2xl font-bold tracking-[-0.02em]">The 4-week cohort runs the full system.</h3>
             <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
-              Live cold-calling sessions, the full playbook, AI pre-call research, AI call audits, and
-              direct Slack access to Luke. The opener tool is one slice. The cohort is the whole knife.
+              Live cold-calling sessions, the playbook, AI pre-call research, AI call audits, and direct
+              Slack access. The cohort takes you from "I have a good opener" to "I have a system that books
+              meetings on repeat."
             </p>
             <div className="mt-6">
               <Link href="https://modernseller.ai" className="btn-ghost">
@@ -160,27 +164,26 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Cohort soft mention */}
+      {/* Cohort — soft, factual, not a wall of CTAs */}
       <section id="cohort" className="mx-auto max-w-6xl px-6 pt-28">
         <div className="card text-center relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none opacity-60" style={{
             background: "radial-gradient(ellipse at bottom, rgba(141,123,255,0.18), transparent 65%)",
           }} />
           <div className="relative">
-            <p className="eyebrow mb-3">When you&apos;re ready for more</p>
+            <p className="eyebrow mb-3">If you want the rest</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-[-0.03em] max-w-3xl mx-auto leading-[1.05]">
-              The opener is the door. <br className="hidden md:block" />
-              <span className="gradient-text">The cohort is the whole house.</span>
+              Openers fix the first 10 seconds. <br className="hidden md:block" />
+              <span className="gradient-text">The cohort fixes everything after.</span>
             </h2>
             <p className="mt-6 text-[17px] text-[color:var(--muted-soft)] max-w-2xl mx-auto leading-relaxed">
-              4 weeks. 8 live cold-calling sessions. Your full playbook, AI pre-call research, AI call audit,
-              and direct Slack access to Luke. Reps who run the system book 3–5x more meetings inside the first month.
+              4 weeks. Live cold-calling sessions, the full playbook, AI pre-call research, AI call audits,
+              and direct Slack access. No pressure — keep using the opener tool either way.
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
               <Link href="https://modernseller.ai" className="btn-primary">
-                Book a 15-min call <span aria-hidden>→</span>
+                See what&apos;s inside <span aria-hidden>→</span>
               </Link>
-              <Link href="https://modernseller.ai" className="btn-ghost">See what&apos;s inside</Link>
             </div>
           </div>
         </div>
@@ -211,8 +214,8 @@ export default function Home() {
               a: "No. It writes the opener — the first 10 seconds. Everything after that is what the cohort teaches.",
             },
             {
-              q: "Is it built for SDRs or AEs?",
-              a: "Both. Anyone whose calendar depends on cold conversations.",
+              q: "Who is this built for?",
+              a: "Anyone who cold calls. SDRs, AEs, founders running outbound, agency owners, recruiters — if your calendar depends on cold conversations, it's for you.",
             },
           ].map(({ q, a }) => (
             <details key={q} className="card group">

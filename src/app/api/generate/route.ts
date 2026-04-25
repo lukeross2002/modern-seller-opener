@@ -47,13 +47,10 @@ Respond with valid JSON in this exact shape and nothing else:
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { research, yourOffer, fallbackProspect } = body || {};
+    const { research, yourOffer, fallbackProspect, prospect } = body || {};
 
     if (!yourOffer || typeof yourOffer !== "string") {
       return Response.json({ error: "Need yourOffer (one line about what you sell)." }, { status: 400 });
-    }
-    if (!research && !fallbackProspect) {
-      return Response.json({ error: "Need either research or fallbackProspect." }, { status: 400 });
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -66,19 +63,32 @@ export async function POST(req: Request) {
 
     const client = new Anthropic({ apiKey });
 
-    const researchBlock = research
-      ? JSON.stringify(research, null, 2)
-      : JSON.stringify({ fallback_only: fallbackProspect }, null, 2);
+    // Build the research block. When deep research isn't available, pass through whatever
+    // the user gave us (company website, name, role, notes) and instruct the model to lean
+    // on its own knowledge of the named company without fabricating specific events.
+    let researchBlock: string;
+    if (research) {
+      researchBlock = JSON.stringify(research, null, 2);
+    } else {
+      const compact = {
+        deep_research_unavailable: true,
+        prospect: prospect || null,
+        notes: fallbackProspect || null,
+      };
+      researchBlock = JSON.stringify(compact, null, 2);
+    }
 
     const userMsg = `Write 3 cold-call openers for this prospect.
 
 WHAT THE REP SELLS
 - ${yourOffer}
 
-RESEARCH (pulled from LinkedIn + their company)
+RESEARCH
 ${researchBlock}
 
-Reminder: respond with the JSON object only, no markdown, no commentary. Do not invent triggers that aren't in the research.`;
+If "deep_research_unavailable" is true, you have no live data — but you may use your own general knowledge of the company (its industry, business model, scale, public positioning) as long as you NEVER invent specific events, quotes, funding rounds, hires, or stats. When you're working from general knowledge alone, lean harder on the problem_led and peer_led angles, and make trigger_led anchor on something publicly true about the company's identity rather than a specific dated event.
+
+Reminder: respond with the JSON object only, no markdown, no commentary.`;
 
     const response = await client.messages.create({
       model: "claude-sonnet-4-6",
