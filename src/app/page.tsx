@@ -105,20 +105,57 @@ export default function Home() {
             </p>
           </div>
           <div className="card relative overflow-hidden">
-            <div className="absolute inset-0 opacity-50 pointer-events-none" style={{
-              background: "radial-gradient(ellipse at top right, rgba(141,123,255,0.18), transparent 60%)",
-            }} />
-            <p className="eyebrow mb-3">The Modern Seller Accelerator</p>
-            <h3 className="text-2xl font-bold tracking-[-0.02em]">10 reps. 4 weeks. Live calls, not slide decks.</h3>
-            <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
-              Live cold-calling sessions twice a week. The full Cold Call Playbook. AI pre-call research.
-              AI call audits on your real calls. Direct Slack access to me. Reps who run the system book
-              <span className="text-white font-medium"> 3–5x more meetings</span> inside the first month.
-            </p>
-            <div className="mt-6">
-              <Link href="https://modernseller.ai" className="btn-ghost">
-                See if you&apos;re a fit <span aria-hidden>→</span>
-              </Link>
+            {/* Layered radial glows for visual depth */}
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background:
+                  "radial-gradient(ellipse at top right, rgba(141,123,255,0.28), transparent 60%), radial-gradient(ellipse 60% 40% at bottom left, rgba(90,161,255,0.14), transparent 70%)",
+              }}
+            />
+
+            <div className="relative">
+              {/* Scarcity pill */}
+              <div className="pill mb-5">
+                <span className="dot" /> 10 spots per cohort
+              </div>
+
+              <p className="eyebrow mb-3">The Modern Seller Accelerator</p>
+
+              <h3 className="text-[26px] md:text-[30px] font-bold tracking-[-0.025em] leading-[1.08]">
+                Live calls,<br />
+                <span className="gradient-text">not slide decks.</span>
+              </h3>
+
+              {/* Stat strip — visual landmark */}
+              <div className="mt-7 grid grid-cols-3 gap-3 py-5 border-y border-[color:var(--border)]">
+                {[
+                  { n: "4", l: "Weeks" },
+                  { n: "10", l: "Reps" },
+                  { n: "3–5x", l: "Meetings" },
+                ].map(({ n, l }) => (
+                  <div key={l} className="text-center">
+                    <div className="text-[26px] md:text-[28px] font-bold gradient-text leading-none">
+                      {n}
+                    </div>
+                    <div className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--muted)]">
+                      {l}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <p className="mt-5 text-[color:var(--muted-soft)] leading-relaxed">
+                Twice-weekly live cold-calling sessions. The full playbook. AI pre-call research,
+                AI call audits, direct Slack access. Hands-on, not theory.
+              </p>
+
+              {/* Primary CTA — gradient, draws the eye */}
+              <div className="mt-7">
+                <Link href="https://modernseller.ai" className="btn-primary">
+                  Apply for the next cohort <span aria-hidden>→</span>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
