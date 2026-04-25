@@ -198,7 +198,7 @@ export default function OpenerTool() {
         <h2 className="text-2xl font-bold tracking-[-0.02em]">Where should we send the playbook?</h2>
         <p className="mt-3 text-[color:var(--muted-soft)] leading-relaxed">
           One email gets you unlimited openers, the Cold Call Opener cheat sheet, and a follow-up on day 3
-          with how the top reps in the cohort use this tool.
+          with how the top reps in the Accelerator use this tool.
         </p>
         <form onSubmit={handleUnlock} className="mt-6 space-y-3">
           <input
@@ -412,16 +412,17 @@ export default function OpenerTool() {
               </div>
             ))}
 
-            {/* Soft, non-pushy cohort lead-in */}
+            {/* Soft accelerator lead-in — Hormozi: scarcity + dream outcome, not a pushy CTA */}
             <div className="card">
               <p className="eyebrow mb-2">If these worked</p>
               <p className="text-[color:var(--muted-soft)] leading-relaxed">
-                The framework that wrote these is the same one taught in the 4-week Modern Seller cohort —
-                with the rest of the call (discovery, objections, close) layered on top.
+                You just used <em>one</em> framework from the Modern Seller Accelerator. The other six handle
+                discovery, objections, multi-thread, and close. <span className="text-white font-medium">10 reps per cohort</span> — every cold
+                call you make for 4 weeks gets reviewed live.
               </p>
               <div className="mt-4">
                 <a href="https://modernseller.ai" className="btn-ghost">
-                  Take a look at the cohort <span aria-hidden>→</span>
+                  See if you&apos;re a fit <span aria-hidden>→</span>
                 </a>
               </div>
             </div>

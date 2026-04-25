@@ -88,35 +88,36 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Lead-magnet honesty: this is one piece */}
+      {/* Why these openers are this good — proof of the bigger system */}
       <section className="mx-auto max-w-6xl px-6 pt-28">
         <div className="grid md:grid-cols-2 gap-5">
           <div className="card">
-            <p className="eyebrow mb-3">What this is</p>
-            <h3 className="text-2xl font-bold tracking-[-0.02em]">One piece of a bigger system.</h3>
+            <p className="eyebrow mb-3">Why these are this good</p>
+            <h3 className="text-2xl font-bold tracking-[-0.02em]">You&apos;re seeing the framework, not the system.</h3>
             <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
-              The opener is the first 10 seconds of a cold call. It&apos;s the hardest part, and the
-              part most reps wing. This tool fixes those 10 seconds.
+              This tool runs <em>one</em> framework from the Modern Seller Accelerator —
+              the research-and-write loop that produces openers that actually book.
             </p>
             <p className="mt-3 text-[color:var(--muted-soft)] leading-relaxed">
-              It&apos;s not the whole call. It won&apos;t teach you discovery, objections, or how to close.
-              That&apos;s by design — this is meant to be useful by itself, while pointing at where the rest lives.
+              The opener is 10 seconds of a 10-minute call. The Accelerator drills you on the other
+              9 minutes 50: discovery, objections, multi-thread, close. Same framework quality. Same voice.
+              Applied to the entire conversation.
             </p>
           </div>
           <div className="card relative overflow-hidden">
             <div className="absolute inset-0 opacity-50 pointer-events-none" style={{
               background: "radial-gradient(ellipse at top right, rgba(141,123,255,0.18), transparent 60%)",
             }} />
-            <p className="eyebrow mb-3">Where the rest lives</p>
-            <h3 className="text-2xl font-bold tracking-[-0.02em]">The 4-week cohort runs the full system.</h3>
+            <p className="eyebrow mb-3">The Modern Seller Accelerator</p>
+            <h3 className="text-2xl font-bold tracking-[-0.02em]">10 reps. 4 weeks. Every cold call you make gets reviewed.</h3>
             <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
-              Live cold-calling sessions, the playbook, AI pre-call research, AI call audits, and direct
-              Slack access. The cohort takes you from "I have a good opener" to "I have a system that books
-              meetings on repeat."
+              Live cold-calling sessions twice a week. The full Cold Call Playbook. AI pre-call research.
+              AI call audits on your real calls. Direct Slack access to me. Reps who run the system book
+              <span className="text-white font-medium"> 3–5x more meetings</span> inside the first month.
             </p>
             <div className="mt-6">
               <Link href="https://modernseller.ai" className="btn-ghost">
-                See the cohort <span aria-hidden>→</span>
+                See if you&apos;re a fit <span aria-hidden>→</span>
               </Link>
             </div>
           </div>
@@ -145,7 +146,7 @@ export default function Home() {
             },
             {
               angle: "Problem-led",
-              line: "“Sarah, every Head of RevOps I&apos;ve talked to this quarter is fighting the same fire — pipeline review takes a full Friday and the data still feels off. Sound familiar, or are you the exception?”",
+              line: "“Sarah, every Head of RevOps I’ve talked to this quarter is fighting the same fire — pipeline review takes a full Friday and the data still feels off. Sound familiar, or are you the exception?”",
               why: "Named-pain framing + soft-no question. Inviting her to disagree gets a real answer faster than asking for permission.",
             },
           ].map(({ angle, line, why }) => (
@@ -164,27 +165,60 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Cohort — soft, factual, not a wall of CTAs */}
+      {/* Accelerator upsell — Hormozi: scarcity, value stack, dream outcome, low-friction CTA */}
       <section id="cohort" className="mx-auto max-w-6xl px-6 pt-28">
         <div className="card text-center relative overflow-hidden">
           <div className="absolute inset-0 pointer-events-none opacity-60" style={{
             background: "radial-gradient(ellipse at bottom, rgba(141,123,255,0.18), transparent 65%)",
           }} />
           <div className="relative">
-            <p className="eyebrow mb-3">If you want the rest</p>
+            <div className="pill mb-4">
+              <span className="dot" /> 10 spots per cohort · By application
+            </div>
             <h2 className="text-3xl md:text-5xl font-bold tracking-[-0.03em] max-w-3xl mx-auto leading-[1.05]">
               Openers fix the first 10 seconds. <br className="hidden md:block" />
-              <span className="gradient-text">The cohort fixes everything after.</span>
+              <span className="gradient-text">The Accelerator fixes everything after.</span>
             </h2>
             <p className="mt-6 text-[17px] text-[color:var(--muted-soft)] max-w-2xl mx-auto leading-relaxed">
-              4 weeks. Live cold-calling sessions, the full playbook, AI pre-call research, AI call audits,
-              and direct Slack access. No pressure — keep using the opener tool either way.
+              4 weeks. 10 reps only. Built for the rep who&apos;s tired of winging it and ready to install
+              a system that books meetings on repeat.
             </p>
-            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+
+            {/* Value stack */}
+            <div className="mt-8 max-w-2xl mx-auto text-left grid sm:grid-cols-2 gap-x-8 gap-y-3 text-[15px]">
+              {[
+                "8 live cold-calling sessions with Luke",
+                "The full Cold Call Playbook (every framework)",
+                "AI pre-call research tool (better than this one)",
+                "AI call audit tool — every dial reviewed",
+                "Direct Slack access · 7 days a week",
+                "Live objection-handling drills",
+              ].map((item) => (
+                <div key={item} className="flex gap-3 items-start">
+                  <span className="mt-1 flex-shrink-0" style={{ color: "#A892FF" }}>—</span>
+                  <span className="text-[color:var(--muted-soft)]">{item}</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-8 text-[15px] text-[color:var(--muted-soft)] max-w-xl mx-auto">
+              Reps who run the system book{" "}
+              <span className="text-white font-semibold">3–5x more meetings</span>{" "}
+              inside the first month.
+            </p>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link href="https://modernseller.ai" className="btn-primary">
-                See what&apos;s inside <span aria-hidden>→</span>
+                Apply for the next cohort <span aria-hidden>→</span>
+              </Link>
+              <Link href="https://modernseller.ai" className="btn-ghost">
+                See full curriculum
               </Link>
             </div>
+
+            <p className="mt-5 text-xs tracking-[0.18em] uppercase text-[color:var(--muted)]">
+              Cohort 01 fills fast · Application takes 60 seconds
+            </p>
           </div>
         </div>
       </section>
@@ -199,19 +233,27 @@ export default function Home() {
           {[
             {
               q: "Is this actually free?",
-              a: "Yes. Drop your email, get unlimited openers. The tool is the lead magnet — the paid product is the 4-week cohort.",
+              a: "Yes. Drop your email and run unlimited openers — they're yours, no catch.",
             },
             {
               q: "Where does the research come from?",
-              a: "We pull public data about the prospect's company (description, headcount, key execs) and — if you give us their first name — their role tenure and prior positions. Same dossier you'd build manually in 20 minutes.",
-            },
-            {
-              q: "What if there's no useful research?",
-              a: "Paste anything you noticed (a LinkedIn post, a news mention, a podcast) into the optional notes. We'll fold it into the openers and still give you three angles.",
+              a: "Live web search. Recent posts, podcasts, press releases, funding news, exec hires — whatever's actually public about the prospect and their company. Each opener cites the source URL so you can verify it before you dial.",
             },
             {
               q: "Will it write a whole call script?",
-              a: "No. It writes the opener — the first 10 seconds. Everything after that is what the cohort teaches.",
+              a: "No. It writes the opener — the first 10 seconds. Discovery, objections, the close — that's the Accelerator.",
+            },
+            {
+              q: "How is the Accelerator different from generic sales training?",
+              a: "Generic training gives you frameworks on a slide deck. The Accelerator runs them on your actual calls — every cold call you make for 4 weeks gets reviewed by me and the cohort. You don't learn cold calling from theory. You learn it on the phone.",
+            },
+            {
+              q: "How many spots are in each cohort?",
+              a: "10 reps. That's the cap — fewer reps means more 1-on-1 time on each live session. It's why we don't scale it.",
+            },
+            {
+              q: "How fast do reps see results?",
+              a: "Most reps book 3–5x more meetings inside the first month. Week 1 installs the playbook. Weeks 2–4 are live calls + coaching. By the end you have a system, not a script you read.",
             },
             {
               q: "Who is this built for?",
