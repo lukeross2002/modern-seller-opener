@@ -102,6 +102,10 @@ export default function OpenerTool() {
   async function handleUnlock(e: FormEvent) {
     e.preventDefault();
     setUnlockError("");
+    if (!firstName.trim()) {
+      setUnlockError("Need your first name.");
+      return;
+    }
     if (!email.includes("@")) {
       setUnlockError("Need a real work email.");
       return;
@@ -111,7 +115,7 @@ export default function OpenerTool() {
       await fetch("/api/lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, firstName, source: "opener-generator" }),
+        body: JSON.stringify({ email: email.trim(), firstName: firstName.trim(), source: "opener-generator" }),
       });
     } catch {
       // non-blocking
@@ -203,7 +207,8 @@ export default function OpenerTool() {
         <form onSubmit={handleUnlock} className="mt-6 space-y-3">
           <input
             type="text"
-            placeholder="First name (optional)"
+            required
+            placeholder="First name"
             className="input"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
