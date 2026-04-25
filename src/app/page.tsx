@@ -37,7 +37,7 @@ export default function Home() {
 
       {/* Stat strip */}
       <section className="border-y border-[color:var(--border)] bg-black/20">
-        <div className="mx-auto max-w-6xl px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="mx-auto max-w-6xl px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-8 place-items-center text-center">
           {[
             { n: "50K+", l: "Cold calls studied" },
             { n: "$2M+", l: "B2B revenue closed" },

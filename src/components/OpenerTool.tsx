@@ -1,31 +1,14 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, useRef, FormEvent } from "react";
 
-type Opener = { angle: string; line: string; why: string };
-type Research = {
-  company?: {
-    name?: string;
-    website?: string;
-    description?: string;
-    industries?: string[];
-    employeeCount?: number;
-    foundedYear?: number;
-    type?: string;
-    hq?: string;
-    keyExecutives?: Array<{ name?: string; title?: string }>;
-  } | null;
-  employee?: {
-    name?: string;
-    firstName?: string;
-    headline?: string;
-    currentRole?: string;
-    currentCompany?: string;
-    location?: string;
-    summary?: string;
-    linkedinUrl?: string;
-    tenureRoles?: Array<{ title?: string; company?: string; start?: string; end?: string }>;
-  } | null;
+type Opener = {
+  angle: string;
+  freshness: string;
+  trigger: string;
+  source?: string;
+  line: string;
+  why: string;
 };
 
 const ANGLE_LABEL: Record<string, string> = {
@@ -33,6 +16,19 @@ const ANGLE_LABEL: Record<string, string> = {
   peer_led: "Peer-led",
   problem_led: "Problem-led",
 };
+
+// Loading stages — each fires at a fixed % of the way to the cap. Total elapsed
+// is what drives the bar; messages just label what's happening.
+const LOADING_STAGES = [
+  { at: 0, label: "Searching the web for fresh signals…" },
+  { at: 0.25, label: "Reading their company news…" },
+  { at: 0.5, label: "Checking recent posts and press…" },
+  { at: 0.7, label: "Picking the sharpest trigger…" },
+  { at: 0.85, label: "Writing your openers in voice…" },
+];
+// Approx duration the bar fills over (real call is 10–25s). We cap at 95%
+// until the actual response lands, then snap to 100%.
+const LOADING_DURATION_MS = 22000;
 
 export default function OpenerTool() {
   const [unlocked, setUnlocked] = useState(false);
@@ -47,11 +43,16 @@ export default function OpenerTool() {
   const [yourOffer, setYourOffer] = useState("");
   const [extraNotes, setExtraNotes] = useState("");
 
-  const [stage, setStage] = useState<"idle" | "researching" | "generating" | "done">("idle");
-  const [research, setResearch] = useState<Research | null>(null);
+  const [generating, setGenerating] = useState(false);
   const [openers, setOpeners] = useState<Opener[]>([]);
   const [researchSummary, setResearchSummary] = useState("");
   const [error, setError] = useState("");
+
+  // Loading bar state
+  const [progress, setProgress] = useState(0);
+  const [stageLabel, setStageLabel] = useState(LOADING_STAGES[0].label);
+  const startRef = useRef<number>(0);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
     try {
@@ -65,6 +66,28 @@ export default function OpenerTool() {
       }
     } catch {}
   }, []);
+
+  useEffect(() => {
+    if (!generating) {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      return;
+    }
+    startRef.current = performance.now();
+    setProgress(0);
+    setStageLabel(LOADING_STAGES[0].label);
+    const tick = () => {
+      const elapsed = performance.now() - startRef.current;
+      const ratio = Math.min(elapsed / LOADING_DURATION_MS, 0.95);
+      setProgress(ratio);
+      const stage = [...LOADING_STAGES].reverse().find((s) => ratio >= s.at);
+      if (stage) setStageLabel(stage.label);
+      if (ratio < 0.95) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [generating]);
 
   async function handleUnlock(e: FormEvent) {
     e.preventDefault();
@@ -95,11 +118,10 @@ export default function OpenerTool() {
     e.preventDefault();
     setError("");
     setOpeners([]);
-    setResearch(null);
     setResearchSummary("");
 
-    const trimmedWebsite = companyWebsite.trim();
     const trimmedFirstName = prospectFirstName.trim();
+    const trimmedWebsite = companyWebsite.trim();
     const hasNotes = extraNotes.trim().length > 0;
 
     if (!trimmedFirstName) {
@@ -115,39 +137,12 @@ export default function OpenerTool() {
       return;
     }
 
-    let researchPayload: Research | null = null;
-
-    if (trimmedWebsite) {
-      setStage("researching");
-      try {
-        const res = await fetch("/api/research", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            companyWebsite: trimmedWebsite,
-            prospectFirstName: trimmedFirstName,
-            prospectRole: prospectRole.trim(),
-          }),
-        });
-        // The research endpoint now returns 200 with research:null when deep research
-        // isn't available (no credits, not found, etc). We always proceed to generate.
-        if (res.ok) {
-          const data = await res.json();
-          researchPayload = (data.research as Research) || null;
-          setResearch(researchPayload);
-        }
-      } catch {
-        // Non-fatal — fall through to generate without research
-      }
-    }
-
-    setStage("generating");
+    setGenerating(true);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          research: researchPayload,
           yourOffer,
           prospect: {
             firstName: trimmedFirstName,
@@ -164,10 +159,13 @@ export default function OpenerTool() {
       const data = await res.json();
       setOpeners(data.openers || []);
       setResearchSummary(data.researchSummary || "");
-      setStage("done");
+      // Snap the bar to 100% before tearing it down — feels good
+      setProgress(1);
+      setStageLabel("Done.");
+      setTimeout(() => setGenerating(false), 250);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something broke.");
-      setStage("idle");
+      setGenerating(false);
     }
   }
 
@@ -208,8 +206,6 @@ export default function OpenerTool() {
     );
   }
 
-  const isLoading = stage === "researching" || stage === "generating";
-
   return (
     <div className="grid lg:grid-cols-[1fr_1.2fr] gap-5">
       <form onSubmit={handleGenerate} className="card space-y-5">
@@ -222,7 +218,7 @@ export default function OpenerTool() {
             onChange={(e) => setCompanyWebsite(e.target.value)}
           />
           <p className="mt-2 text-xs text-[color:var(--muted)]">
-            We pull what their company does, headcount, key execs, and recent moves.
+            Just the domain. We use this to research recent news, posts, and funding.
           </p>
         </div>
 
@@ -271,33 +267,43 @@ export default function OpenerTool() {
 
         {error && <p className="text-sm text-red-300">{error}</p>}
 
-        <button type="submit" className="btn-primary w-full justify-center" disabled={isLoading}>
-          {stage === "researching" ? "Pulling research…" :
-           stage === "generating" ? "Writing your openers…" :
-           "Generate 3 openers"} <span aria-hidden>→</span>
+        <button type="submit" className="btn-primary w-full justify-center" disabled={generating}>
+          {generating ? "Working…" : "Generate 3 openers"} <span aria-hidden>→</span>
         </button>
         <p className="text-xs text-[color:var(--muted)] text-center">
-          Takes 8–15 seconds. Nothing about your prospect is stored.
+          Takes 15–25 seconds. We&apos;re searching live sources. Nothing is stored.
         </p>
       </form>
 
       <div className="space-y-4">
-        {stage === "idle" && openers.length === 0 && (
+        {!generating && openers.length === 0 && !error && (
           <div className="card">
             <p className="eyebrow mb-3">Output</p>
             <h3 className="text-xl font-semibold tracking-[-0.01em]">3 tailored openers will land here.</h3>
             <p className="mt-3 text-[color:var(--muted-soft)] leading-relaxed">
-              Each opener arrives with the angle and the tactical reason it works. Use one as-is, or remix to your voice.
+              Each opener arrives with the angle, the trigger we found, the source URL,
+              and the tactical reason it works. Use one as-is, or remix to your voice.
             </p>
           </div>
         )}
 
-        {isLoading && (
+        {generating && (
           <div className="card">
-            <p className="eyebrow mb-3">
-              {stage === "researching" ? "Researching the company…" : "Writing your openers…"}
+            <p className="eyebrow mb-3">{stageLabel}</p>
+            {/* Progress bar */}
+            <div className="w-full h-2 rounded-full bg-white/[0.06] overflow-hidden">
+              <div
+                className="h-full rounded-full transition-[width] duration-150 ease-linear"
+                style={{
+                  width: `${Math.round(progress * 100)}%`,
+                  background: "linear-gradient(90deg, #5AA1FF 0%, #8D7BFF 50%, #C68FFF 100%)",
+                }}
+              />
+            </div>
+            <p className="mt-3 text-xs text-[color:var(--muted)]">
+              Live web search · {Math.round(progress * 100)}%
             </p>
-            <div className="space-y-3">
+            <div className="space-y-3 mt-6">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="opener-card animate-pulse">
                   <div className="h-3 w-24 bg-white/10 rounded" />
@@ -309,43 +315,25 @@ export default function OpenerTool() {
           </div>
         )}
 
-        {stage === "done" && openers.length > 0 && (
+        {!generating && openers.length > 0 && (
           <>
-            <div className="card">
-              <p className="eyebrow mb-2">What we worked from</p>
-              {(research?.company?.name || research?.employee?.name) ? (
-                <h3 className="text-lg font-semibold tracking-[-0.01em]">
-                  {research?.employee?.name || research?.company?.name || "Prospect"}
-                  {research?.employee?.currentRole && ` · ${research.employee.currentRole}`}
-                  {research?.employee?.currentCompany && ` @ ${research.employee.currentCompany}`}
-                  {!research?.employee && research?.company?.name && research?.company?.industries?.[0] && ` · ${research.company.industries[0]}`}
-                </h3>
-              ) : (
-                <h3 className="text-lg font-semibold tracking-[-0.01em]">
-                  {prospectFirstName}{prospectRole && ` · ${prospectRole}`}{companyWebsite && ` @ ${companyWebsite}`}
-                </h3>
-              )}
-              {researchSummary && (
-                <p className="mt-2 text-[color:var(--muted-soft)] leading-relaxed">
+            {researchSummary && (
+              <div className="card">
+                <p className="eyebrow mb-2">What we found</p>
+                <p className="text-[color:var(--muted-soft)] leading-relaxed">
                   <span className="text-white font-medium">Strongest signal — </span>{researchSummary}
                 </p>
-              )}
-              <p className="mt-3 text-xs text-[color:var(--muted)]">
-                Source: {[
-                  research?.company && "company details",
-                  research?.employee && "prospect profile",
-                  !research && "your inputs only",
-                  extraNotes.trim() && research && "your notes",
-                ].filter(Boolean).join(" + ") || "your inputs"}
-              </p>
-            </div>
+              </div>
+            )}
 
             <div className="flex items-center justify-between pt-1">
               <p className="eyebrow">Your openers · {openers.length}</p>
               <button
                 onClick={() => {
                   const text = openers
-                    .map((o, i) => `${i + 1}. [${ANGLE_LABEL[o.angle] || o.angle}]\n${o.line}\n— Why: ${o.why}`)
+                    .map((o, i) =>
+                      `${i + 1}. [${ANGLE_LABEL[o.angle] || o.angle} · ${o.freshness}]\n${o.line}\n— Trigger: ${o.trigger}${o.source ? ` (${o.source})` : ""}\n— Why: ${o.why}`
+                    )
                     .join("\n\n");
                   navigator.clipboard.writeText(text);
                 }}
@@ -356,12 +344,41 @@ export default function OpenerTool() {
             </div>
             {openers.map((o, i) => (
               <div key={i} className="opener-card">
-                <div className="text-[11px] tracking-[0.2em] uppercase font-semibold" style={{color: "#A892FF"}}>
-                  {ANGLE_LABEL[o.angle] || o.angle}
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="text-[11px] tracking-[0.2em] uppercase font-semibold" style={{ color: "#A892FF" }}>
+                    {ANGLE_LABEL[o.angle] || o.angle}
+                  </div>
+                  <div className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--muted)] font-medium px-2 py-1 rounded-full border border-[color:var(--border)] bg-white/[0.02]">
+                    Trigger · {o.freshness}
+                  </div>
                 </div>
                 <p className="mt-3 text-[17px] leading-relaxed">{o.line}</p>
                 <div className="divider my-5" />
-                <p className="text-sm text-[color:var(--muted-soft)]"><span className="text-white font-medium">Why it works — </span>{o.why}</p>
+                <div className="space-y-2 text-sm">
+                  <p className="text-[color:var(--muted-soft)]">
+                    <span className="text-white font-medium">Anchored to — </span>{o.trigger}
+                    {o.source && (
+                      <>
+                        {" · "}
+                        {o.source.startsWith("http") ? (
+                          <a
+                            href={o.source}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[color:var(--grad-2)] hover:text-white underline underline-offset-2"
+                          >
+                            source →
+                          </a>
+                        ) : (
+                          <span className="text-[color:var(--muted)]">{o.source}</span>
+                        )}
+                      </>
+                    )}
+                  </p>
+                  <p className="text-[color:var(--muted-soft)]">
+                    <span className="text-white font-medium">Why it works — </span>{o.why}
+                  </p>
+                </div>
               </div>
             ))}
 
