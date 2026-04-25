@@ -6,6 +6,7 @@ type Opener = {
   angle: string;
   freshness: string;
   trigger: string;
+  trigger_date?: string;
   source?: string;
   line: string;
   why: string;
@@ -40,7 +41,9 @@ export default function OpenerTool() {
 
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [prospectFirstName, setProspectFirstName] = useState("");
+  const [prospectLastName, setProspectLastName] = useState("");
   const [prospectRole, setProspectRole] = useState("");
+  const [prospectLinkedin, setProspectLinkedin] = useState("");
   const [yourOffer, setYourOffer] = useState("");
   const [extraNotes, setExtraNotes] = useState("");
 
@@ -122,11 +125,13 @@ export default function OpenerTool() {
     setResearchSummary("");
 
     const trimmedFirstName = prospectFirstName.trim();
+    const trimmedLastName = prospectLastName.trim();
     const trimmedWebsite = companyWebsite.trim();
+    const trimmedLinkedin = prospectLinkedin.trim();
     const hasNotes = extraNotes.trim().length > 0;
 
-    if (!trimmedFirstName) {
-      setError("Need the prospect's first name.");
+    if (!trimmedFirstName || !trimmedLastName) {
+      setError("Need the prospect's first AND last name — the last name lets us research the actual person.");
       return;
     }
     if (!yourOffer.trim()) {
@@ -150,8 +155,10 @@ export default function OpenerTool() {
           yourOffer,
           prospect: {
             firstName: trimmedFirstName,
+            lastName: trimmedLastName,
             role: prospectRole.trim() || undefined,
             companyWebsite: trimmedWebsite || undefined,
+            linkedinUrl: trimmedLinkedin || undefined,
           },
           fallbackProspect: hasNotes ? extraNotes : undefined,
         }),
@@ -245,13 +252,26 @@ export default function OpenerTool() {
             />
             <input
               className="input"
-              placeholder="Their role (optional)"
-              value={prospectRole}
-              onChange={(e) => setProspectRole(e.target.value)}
+              placeholder="Last name"
+              value={prospectLastName}
+              onChange={(e) => setProspectLastName(e.target.value)}
+              required
             />
           </div>
+          <input
+            className="input mt-3"
+            placeholder="Their role (optional, e.g. Head of RevOps)"
+            value={prospectRole}
+            onChange={(e) => setProspectRole(e.target.value)}
+          />
+          <input
+            className="input mt-3"
+            placeholder="LinkedIn URL (optional — helps disambiguate common names)"
+            value={prospectLinkedin}
+            onChange={(e) => setProspectLinkedin(e.target.value)}
+          />
           <p className="mt-2 text-xs text-[color:var(--muted)]">
-            First name is the hook — every opener uses it.
+            Full name lets us research the actual person, not just their company.
           </p>
         </div>
 
@@ -368,6 +388,7 @@ export default function OpenerTool() {
                 <div className="space-y-2 text-sm">
                   <p className="text-[color:var(--muted-soft)]">
                     <span className="text-white font-medium">Anchored to — </span>{o.trigger}
+                    {o.trigger_date && <span className="text-[color:var(--muted)]"> · {o.trigger_date}</span>}
                     {o.source && (
                       <>
                         {" · "}

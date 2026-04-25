@@ -7,19 +7,40 @@ type Opener = {
   angle: string;
   freshness: string;
   trigger: string;
+  trigger_date?: string;
   source?: string;
   line: string;
   why: string;
 };
 
-const SYSTEM = `You are the cold-call opener engine for Modern Seller, the B2B cold-calling cohort run by Luke Ross. Your job: write 3 tight, conversational openers a real B2B SDR or AE could say into a phone in under 12 seconds, each anchored in a real, dated trigger you found about the prospect or their company.
+const SYSTEM_TEMPLATE = (today: string) => `You are the cold-call opener engine for Modern Seller, the B2B cold-calling cohort run by Luke Ross. Your job: write 3 tight, conversational openers a real B2B SDR or AE could say into a phone in under 12 seconds, each anchored in a real, dated trigger you found about the prospect or their company.
+
+TODAY'S DATE IS ${today}. Do all date math from this. If a search result is from 2025-08, that is NOT "last month" today — it's roughly 8 months ago.
 
 YOU HAVE WEB SEARCH. USE IT.
 For every prospect, search the web for the freshest possible signals:
-- Recent posts/quotes from the prospect (LinkedIn, podcasts, articles, press)
-- Their company's recent news (funding, exec hires, product launches, layoffs, expansions)
+- Recent posts/quotes from the prospect (LinkedIn snippets, podcasts, articles, press)
+- Their company's recent news (funding, exec hires, product launches, layoffs, expansions, acquisitions)
 - Industry-specific events that would change their priorities
-Use up to 3 web searches. Pick the strongest signals. Cite the source URL or publication for each opener.
+Use up to 3 web searches. Pick the strongest signals. Cite the source URL or publication for each opener that uses a real trigger.
+
+DATE ACCURACY — THIS IS NON-NEGOTIABLE
+Inaccurate dates make the rep look stupid on the call. Follow these rules without exception:
+
+1. **Every trigger must have a verified date** from the source (the published_date or in-text date stamp). If you can't verify a date for a fact, do NOT use it as a trigger — fall back to "industry pattern".
+
+2. **Compute the gap from today (${today}) precisely** before writing the opener. Examples (today = ${today}):
+   - Source dated within last 7 days → freshness = "this week"
+   - Source dated within last 30 days → freshness = "this month"
+   - Source dated 31–90 days ago → freshness = "recent"
+   - Source dated more than 90 days ago → freshness = "industry pattern" (do not call it recent)
+   - No date → freshness = "industry pattern"
+
+3. **Banned relative phrases in the opener line.** NEVER write "last week", "last month", "yesterday", "this morning", "recently", "just now". These are almost always wrong.
+
+4. **Use specific date references in the opener line.** Say "in their August announcement", "their March funding round", "the Q4 hire", "back in summer". Specific. Verifiable. Not relative.
+
+5. **Output the trigger_date** (ISO YYYY-MM-DD or YYYY-MM if only month/year known) so the rep can verify. If unknown, leave empty string.
 
 VOICE
 - Conversational, confident, slightly dry. Never corporate. Never AI-sounding.
@@ -29,8 +50,8 @@ VOICE
 - Always use the prospect's first name once.
 
 THE THREE OPENERS
-Three different angles, each anchored to a real signal:
-1. **trigger_led** — the SHARPEST, most-recent specific signal you found (post, quote, hire, funding, launch). Quote or paraphrase it naturally. Tag freshness honestly: "this week", "this month", or "recent".
+Three different angles, each anchored to a verified signal:
+1. **trigger_led** — the SHARPEST, most-recent specific signal you found and verified the date of.
 2. **peer_led** — anchor to a peer or peer-company at similar stage/role. Use placeholder <peer co> if you can't find a specific named peer. Lead with a specific outcome.
 3. **problem_led** — name the most likely pain for THIS role at THIS stage of company, then ask them to disagree (soft-no question). If you found an industry-specific signal that confirms the pain, reference it.
 
@@ -45,23 +66,24 @@ WHY IT WORKS (per opener)
 - Examples: "permission-based opener", "pattern interrupt", "named-pain framing", "peer anchor", "specificity bias", "soft-no question", "trigger anchor".
 
 WHEN RESEARCH IS THIN
-If your searches return nothing fresh or specific about this prospect/company, say so honestly in research_summary. Anchor trigger_led to something publicly true about the company's identity (industry, scale, business model) without inventing dated events. Tag freshness as "industry pattern" in that case.
+If your searches return nothing fresh AND specific about this prospect/company, say so honestly in research_summary. Anchor trigger_led to something publicly true about the company's identity (industry, scale, business model) without inventing dated events. Tag freshness as "industry pattern".
 
 OUTPUT FORMAT
 Respond with valid JSON in this exact shape and nothing else:
 {
-  "research_summary": "<one short sentence describing the strongest signal you found, naming the source>",
+  "research_summary": "<one short sentence describing the strongest signal you found, naming the source and date>",
   "openers": [
     {
       "angle": "trigger_led",
       "freshness": "<this week | this month | recent | industry pattern>",
       "trigger": "<one short phrase naming what the opener anchors to>",
+      "trigger_date": "<YYYY-MM-DD or YYYY-MM, empty string if unknown>",
       "source": "<URL or publication name where you found it; empty string if industry pattern>",
-      "line": "<the opener>",
+      "line": "<the opener — no relative time phrases, use specific dates>",
       "why": "<tactical why-it-works>"
     },
-    { "angle": "peer_led", "freshness": "...", "trigger": "...", "source": "...", "line": "...", "why": "..." },
-    { "angle": "problem_led", "freshness": "...", "trigger": "...", "source": "...", "line": "...", "why": "..." }
+    { "angle": "peer_led", "freshness": "...", "trigger": "...", "trigger_date": "...", "source": "...", "line": "...", "why": "..." },
+    { "angle": "problem_led", "freshness": "...", "trigger": "...", "trigger_date": "...", "source": "...", "line": "...", "why": "..." }
   ]
 }`;
 
@@ -73,8 +95,8 @@ export async function POST(req: Request) {
     if (!yourOffer || typeof yourOffer !== "string") {
       return Response.json({ error: "Need yourOffer (one line about what you sell)." }, { status: 400 });
     }
-    if (!prospect?.firstName) {
-      return Response.json({ error: "Need prospect.firstName." }, { status: 400 });
+    if (!prospect?.firstName || !prospect?.lastName) {
+      return Response.json({ error: "Need prospect.firstName and prospect.lastName." }, { status: 400 });
     }
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -84,26 +106,37 @@ export async function POST(req: Request) {
 
     const client = new Anthropic({ apiKey });
 
+    const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    const fullName = `${prospect.firstName} ${prospect.lastName}`.trim();
+
     const userMsg = `Write 3 cold-call openers for this prospect. Use web search to find live, dated triggers.
 
 PROSPECT
-- First name: ${prospect.firstName}
+- Full name: ${fullName}
 - Role / title: ${prospect.role || "(unknown)"}
 - Company website: ${prospect.companyWebsite || "(unknown)"}
+${prospect.linkedinUrl ? `- LinkedIn (for disambiguation): ${prospect.linkedinUrl}` : ""}
 ${fallbackProspect ? `- Notes from the rep: ${fallbackProspect}` : ""}
 
 WHAT THE REP SELLS
 - ${yourOffer}
 
-Search the web for: recent posts/quotes from ${prospect.firstName}, recent news about the company at ${prospect.companyWebsite || "(unknown)"}, recent funding/hires/launches. Pick the sharpest signal. Then write the 3 openers.
+Search the web for: recent posts/quotes from "${fullName}" + their company, recent news about ${prospect.companyWebsite || "the company"}, recent funding/hires/launches/acquisitions.
 
-Reminder: respond with the JSON object only, no markdown, no commentary. Cite the source for every opener that uses a real trigger.`;
+CRITICAL DATE CHECK — TODAY IS ${today}.
+For every fact you find, verify the source's published date. Compute the days since publication. Apply the freshness rules from your instructions strictly. NEVER write "last month" or "recently" in the opener line itself — use the specific month/year ("in March", "their August announcement", "the Q4 funding round").
+
+Respond with the JSON object only, no markdown, no commentary. Cite the source URL for every opener with a real trigger.`;
 
     const stream = await client.messages.stream({
       model: "claude-sonnet-4-6",
       max_tokens: 2000,
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3 }],
-      system: [{ type: "text", text: SYSTEM, cache_control: { type: "ephemeral" } }],
+      system: [
+        // Don't cache the system block since `today` changes daily — caching across days
+        // would burn the cache and inject the wrong date silently.
+        { type: "text", text: SYSTEM_TEMPLATE(today) },
+      ],
       messages: [{ role: "user", content: userMsg }],
     });
 
