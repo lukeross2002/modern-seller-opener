@@ -109,7 +109,7 @@ export default function Home() {
               background: "radial-gradient(ellipse at top right, rgba(141,123,255,0.18), transparent 60%)",
             }} />
             <p className="eyebrow mb-3">The Modern Seller Accelerator</p>
-            <h3 className="text-2xl font-bold tracking-[-0.02em]">10 reps. 4 weeks. Every cold call you make gets reviewed.</h3>
+            <h3 className="text-2xl font-bold tracking-[-0.02em]">10 reps. 4 weeks. Live calls, not slide decks.</h3>
             <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
               Live cold-calling sessions twice a week. The full Cold Call Playbook. AI pre-call research.
               AI call audits on your real calls. Direct Slack access to me. Reps who run the system book
@@ -245,7 +245,7 @@ export default function Home() {
             },
             {
               q: "How is the Accelerator different from generic sales training?",
-              a: "Generic training gives you frameworks on a slide deck. The Accelerator runs them on your actual calls — every cold call you make for 4 weeks gets reviewed by me and the cohort. You don't learn cold calling from theory. You learn it on the phone.",
+              a: "Generic training gives you frameworks on a slide deck. The Accelerator is hands-on — live cold-calling sessions twice a week, real call reviews from me, and a cohort that calls together. You don't learn cold calling from theory. You learn it on the phone.",
             },
             {
               q: "How many spots are in each cohort?",

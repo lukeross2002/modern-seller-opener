@@ -417,8 +417,8 @@ export default function OpenerTool() {
               <p className="eyebrow mb-2">If these worked</p>
               <p className="text-[color:var(--muted-soft)] leading-relaxed">
                 You just used <em>one</em> framework from the Modern Seller Accelerator. The other six handle
-                discovery, objections, multi-thread, and close. <span className="text-white font-medium">10 reps per cohort</span> — every cold
-                call you make for 4 weeks gets reviewed live.
+                discovery, objections, multi-thread, and close. <span className="text-white font-medium">10 reps per cohort</span> — hands-on,
+                live cold-calling sessions, real call reviews.
               </p>
               <div className="mt-4">
                 <a href="https://modernseller.ai" className="btn-ghost">
