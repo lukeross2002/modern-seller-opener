@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Modern Seller · Opener Generator
 
-## Getting Started
+Free cold-call opener generator that doubles as the lead magnet for the Modern Seller cohort.
 
-First, run the development server:
+Visitors paste a prospect (name, role, company, anything they found on LinkedIn). The tool returns 5 tailored openers in the Modern Seller voice — each with the tactical reason it works. Email-gated, with the captured leads forwarded to your CRM/email tool via webhook.
+
+Built to look and feel exactly like [modernseller.ai](https://modernseller.ai).
+
+## What's inside
+
+- **Landing page** (`/`) — hero, stat strip, how-it-works, sample openers, cohort upsell, FAQ
+- **Tool page** (`/tool`) — email gate, then the 5-opener generator
+- **`POST /api/lead`** — captures the email and forwards to your webhook (Zapier, ConvertKit, n8n, Make, etc.)
+- **`POST /api/generate`** — calls Claude (Sonnet 4.6) with a tightly-tuned system prompt to produce 5 openers in Luke's voice as JSON
+
+## One-time setup
+
+You need exactly two environment variables. Vercel is the easiest place to set them.
+
+| Var | What it is | Required? |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Your Claude API key from https://console.anthropic.com/ | Yes — the generator can't run without it |
+| `LEAD_WEBHOOK_URL` | A URL that receives a POST every time someone unlocks the tool. Connect it to ConvertKit, Mailchimp, Beehiiv, Zapier, n8n — anything that listens for webhooks. | No — without it, leads only get logged. Strongly recommended for the day-3 follow-up email automation. |
+
+Copy `.env.example` to `.env.local` and fill them in for local dev.
+
+## The day-3 upsell
+
+The tool itself doesn't send email. It hands the captured email to your webhook. The recommended flow:
+
+1. **Day 0** (immediately): your email tool sends a welcome + the playbook PDF you promised
+2. **Day 3-4**: your email tool sends the upsell — "you've used the opener tool, here's the cohort"
+
+Set this up once in your email tool of choice (ConvertKit/Beehiiv/etc.) and every captured lead flows through it automatically.
+
+## Run locally
 
 ```bash
+npm install
+cp .env.example .env.local   # then fill in ANTHROPIC_API_KEY
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# easiest: push to GitHub, then import the repo on vercel.com
+# add ANTHROPIC_API_KEY and LEAD_WEBHOOK_URL in the Vercel project settings
+```
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+That's it.
