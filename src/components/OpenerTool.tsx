@@ -300,7 +300,7 @@ export default function OpenerTool() {
           {generating ? "Working…" : "Generate 3 openers"} <span aria-hidden>→</span>
         </button>
         <p className="text-xs text-[color:var(--muted)] text-center">
-          Takes 15–25 seconds. We&apos;re searching live sources. Nothing is stored.
+          Takes 30–60 seconds. We&apos;re searching live sources. Nothing is stored.
         </p>
       </form>
 
