@@ -21,16 +21,15 @@ const ANGLE_LABEL: Record<string, string> = {
 // Loading stages — each fires at a fixed % of the way to the cap. Total elapsed
 // is what drives the bar; messages just label what's happening.
 const LOADING_STAGES = [
-  { at: 0, label: "Searching the web for fresh signals…" },
-  { at: 0.18, label: "Reading their recent company news…" },
-  { at: 0.36, label: "Checking recent posts and press…" },
-  { at: 0.55, label: "Cross-referencing what you sell…" },
-  { at: 0.72, label: "Picking the sharpest trigger…" },
-  { at: 0.85, label: "Writing your openers in voice…" },
+  { at: 0, label: "Searching the live web for fresh signals…" },
+  { at: 0.22, label: "Reading their recent company news…" },
+  { at: 0.45, label: "Looking up the prospect by name…" },
+  { at: 0.65, label: "Verifying dates and picking the sharpest trigger…" },
+  { at: 0.82, label: "Writing your openers in voice…" },
 ];
-// Bar fills over this many ms (real calls land at 30–50s). We cap at 95%
-// until the response actually arrives, then snap to 100%.
-const LOADING_DURATION_MS = 42000;
+// Bar fills over this many ms (real calls now land at 25–40s with max_uses=2).
+// We cap at 95% until the response actually arrives, then snap to 100%.
+const LOADING_DURATION_MS = 32000;
 
 export default function OpenerTool() {
   const [unlocked, setUnlocked] = useState(false);

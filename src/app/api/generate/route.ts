@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 90;
 
 type Opener = {
   angle: string;
@@ -17,12 +17,11 @@ const SYSTEM_TEMPLATE = (today: string) => `You are the cold-call opener engine 
 
 TODAY'S DATE IS ${today}. Do all date math from this. If a search result is from 2025-08, that is NOT "last month" today — it's roughly 8 months ago.
 
-YOU HAVE WEB SEARCH. USE IT.
-For every prospect, search the web for the freshest possible signals:
-- Recent posts/quotes from the prospect (LinkedIn snippets, podcasts, articles, press)
-- Their company's recent news (funding, exec hires, product launches, layoffs, expansions, acquisitions)
-- Industry-specific events that would change their priorities
-Use up to 3 web searches. Pick the strongest signals. Cite the source URL or publication for each opener that uses a real trigger.
+YOU HAVE WEB SEARCH. USE IT EFFICIENTLY — YOU GET 2 QUERIES.
+Spend them well. Suggested split:
+- Query 1: the company — recent news (funding, exec hires, launches, layoffs, expansions, acquisitions). Use the company name + likely keywords ("acquisition", "funding", "hires", or current year).
+- Query 2: the prospect by name — quotes, podcasts, posts, articles, press mentions ("<full name>" + their company).
+If query 1 returns a strong fresh trigger, query 2 is optional — skip it and move on. Cite the source URL for every opener that uses a real trigger.
 
 DATE ACCURACY — THIS IS NON-NEGOTIABLE
 Inaccurate dates make the rep look stupid on the call. Follow these rules without exception:
@@ -130,8 +129,8 @@ Respond with the JSON object only, no markdown, no commentary. Cite the source U
 
     const stream = await client.messages.stream({
       model: "claude-sonnet-4-6",
-      max_tokens: 2000,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 3 }],
+      max_tokens: 1600,
+      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 2 }],
       system: [
         // Don't cache the system block since `today` changes daily — caching across days
         // would burn the cache and inject the wrong date silently.
