@@ -21,14 +21,15 @@ const ANGLE_LABEL: Record<string, string> = {
 // is what drives the bar; messages just label what's happening.
 const LOADING_STAGES = [
   { at: 0, label: "Searching the web for fresh signals…" },
-  { at: 0.25, label: "Reading their company news…" },
-  { at: 0.5, label: "Checking recent posts and press…" },
-  { at: 0.7, label: "Picking the sharpest trigger…" },
+  { at: 0.18, label: "Reading their recent company news…" },
+  { at: 0.36, label: "Checking recent posts and press…" },
+  { at: 0.55, label: "Cross-referencing what you sell…" },
+  { at: 0.72, label: "Picking the sharpest trigger…" },
   { at: 0.85, label: "Writing your openers in voice…" },
 ];
-// Approx duration the bar fills over (real call is 10–25s). We cap at 95%
-// until the actual response lands, then snap to 100%.
-const LOADING_DURATION_MS = 22000;
+// Bar fills over this many ms (real calls land at 30–50s). We cap at 95%
+// until the response actually arrives, then snap to 100%.
+const LOADING_DURATION_MS = 42000;
 
 export default function OpenerTool() {
   const [unlocked, setUnlocked] = useState(false);
@@ -138,10 +139,13 @@ export default function OpenerTool() {
     }
 
     setGenerating(true);
+    const ctrl = new AbortController();
+    const watchdog = setTimeout(() => ctrl.abort(), 75_000);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: ctrl.signal,
         body: JSON.stringify({
           yourOffer,
           prospect: {
@@ -152,6 +156,7 @@ export default function OpenerTool() {
           fallbackProspect: hasNotes ? extraNotes : undefined,
         }),
       });
+      clearTimeout(watchdog);
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || "Generator hit an error.");
@@ -164,7 +169,13 @@ export default function OpenerTool() {
       setStageLabel("Done.");
       setTimeout(() => setGenerating(false), 250);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something broke.");
+      clearTimeout(watchdog);
+      const msg = err instanceof Error ? err.message : "Something broke.";
+      setError(
+        msg.includes("abort")
+          ? "That took longer than 75 seconds. The web search may be slow right now — try again."
+          : msg
+      );
       setGenerating(false);
     }
   }
