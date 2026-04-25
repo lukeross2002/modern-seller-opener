@@ -198,11 +198,10 @@ export default function OpenerTool() {
   if (!unlocked) {
     return (
       <div className="card max-w-xl mx-auto">
-        <p className="eyebrow mb-3">Unlock the tool · 10 seconds</p>
-        <h2 className="text-2xl font-bold tracking-[-0.02em]">Where should we send the playbook?</h2>
+        <p className="eyebrow mb-3">Access the tool · 10 seconds</p>
+        <h2 className="text-2xl font-bold tracking-[-0.02em]">You&apos;re one step away.</h2>
         <p className="mt-3 text-[color:var(--muted-soft)] leading-relaxed">
-          One email gets you unlimited openers, the Cold Call Opener cheat sheet, and a follow-up on day 3
-          with how the top reps in the Accelerator use this tool.
+          Drop your name and email below to unlock unlimited openers.
         </p>
         <form onSubmit={handleUnlock} className="mt-6 space-y-3">
           <input
@@ -223,11 +222,8 @@ export default function OpenerTool() {
           />
           {unlockError && <p className="text-sm text-red-300">{unlockError}</p>}
           <button type="submit" className="btn-primary w-full justify-center" disabled={unlockLoading}>
-            {unlockLoading ? "Unlocking…" : "Unlock the generator"} <span aria-hidden>→</span>
+            {unlockLoading ? "Unlocking…" : "Unlock the tool"} <span aria-hidden>→</span>
           </button>
-          <p className="text-xs text-[color:var(--muted)] text-center mt-3">
-            No spam. One welcome email, one follow-up, then quiet.
-          </p>
         </form>
       </div>
     );
