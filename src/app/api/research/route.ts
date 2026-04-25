@@ -1,175 +1,152 @@
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
-type Posts = { activities?: Array<{ title?: string; link?: string; activity_status?: string }> };
-type Profile = {
-  full_name?: string;
-  first_name?: string;
-  last_name?: string;
-  occupation?: string;
-  headline?: string;
-  summary?: string;
-  city?: string;
-  country_full_name?: string;
-  experiences?: Array<{ title?: string; company?: string; starts_at?: { month?: number; year?: number } | null; description?: string }>;
-  public_identifier?: string;
-};
-type Company = {
+type CompanyDetails = {
   name?: string;
   description?: string;
-  industry?: string;
-  company_size?: number[];
-  hq?: { city?: string; country?: string } | null;
-  updates?: Array<{ text?: string; posted_on?: { day?: number; month?: number; year?: number } | null }>;
-  funding_data?: Array<{ funding_type?: string; money_raised?: number; announced_date?: { year?: number; month?: number } | null }>;
+  industries?: string[];
+  employee_count?: number;
+  founded_year?: number;
+  company_type?: string;
+  website?: string;
+  executives?: Array<{ name?: string; title?: string }>;
+  addresses?: Array<{ city?: string; country?: string; is_primary?: boolean }>;
 };
 
-function normalizeLinkedInUrl(input: string): string | null {
+type EmployeeProfile = {
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
+  current_position?: { title?: string; company_name?: string; description?: string; start_date?: string };
+  positions?: Array<{ title?: string; company_name?: string; start_date?: string; end_date?: string }>;
+  summary?: string;
+  headline?: string;
+  location?: { city?: string; country?: string };
+  linkedin_url?: string;
+};
+
+function normalizeWebsite(input: string): string | null {
   try {
     const trimmed = (input || "").trim();
     if (!trimmed) return null;
-    const withProtocol = trimmed.startsWith("http") ? trimmed : `https://${trimmed}`;
+    const withProtocol = trimmed.match(/^https?:\/\//) ? trimmed : `https://${trimmed}`;
     const u = new URL(withProtocol);
-    if (!u.hostname.includes("linkedin.com")) return null;
-    if (!u.pathname.includes("/in/")) return null;
-    u.search = "";
-    u.hash = "";
-    return u.toString().replace(/\/$/, "");
+    return u.hostname.replace(/^www\./, "");
   } catch {
     return null;
   }
 }
 
-async function px(path: string, key: string, init?: RequestInit) {
-  const res = await fetch(`https://nubela.co/proxycurl/api${path}`, {
-    ...init,
-    headers: {
-      Authorization: `Bearer ${key}`,
-      ...(init?.headers || {}),
-    },
-  });
-  if (!res.ok) {
-    const txt = await res.text().catch(() => "");
-    throw new Error(`Proxycurl ${path} ${res.status}: ${txt.slice(0, 200)}`);
+async function np(path: string, params: Record<string, string>, key: string, timeoutMs = 18000) {
+  const qs = new URLSearchParams(params).toString();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(`https://nubela.co/api/v1/${path}?${qs}`, {
+      headers: { Authorization: `Bearer ${key}` },
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+    const txt = await res.text();
+    if (!res.ok) {
+      throw new Error(`NP ${path} ${res.status}: ${txt.slice(0, 200)}`);
+    }
+    return JSON.parse(txt);
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
   }
-  return res.json();
-}
-
-function recentExperience(profile: Profile) {
-  const exps = profile.experiences || [];
-  if (!exps.length) return null;
-  const current = exps[0];
-  return {
-    title: current.title,
-    company: current.company,
-    started: current.starts_at?.year || null,
-  };
 }
 
 export async function POST(req: Request) {
   try {
-    const { linkedinUrl } = await req.json();
-    const url = normalizeLinkedInUrl(linkedinUrl);
-    if (!url) {
+    const { companyWebsite, prospectFirstName, prospectRole } = await req.json();
+
+    const website = normalizeWebsite(companyWebsite);
+    if (!website) {
       return Response.json(
-        { error: "Need a valid LinkedIn profile URL (linkedin.com/in/<handle>)." },
+        { error: "Need a valid company website (e.g. acme.com)." },
         { status: 400 }
       );
     }
 
     const key = process.env.PROXYCURL_API_KEY;
     if (!key) {
-      return Response.json(
-        { error: "Server is missing PROXYCURL_API_KEY." },
-        { status: 500 }
-      );
+      return Response.json({ error: "Server is missing PROXYCURL_API_KEY." }, { status: 500 });
     }
 
-    // 1. Fetch profile
-    let profile: Profile;
+    // 1. Company details (1 credit, ~2s)
+    let company: CompanyDetails | null = null;
+    let companyError: string | null = null;
     try {
-      profile = await px(
-        `/v2/linkedin?url=${encodeURIComponent(url)}&extra=include&fallback_to_cache=on-error&use_cache=if-present`,
-        key
-      );
+      company = await np("company/details", { website }, key);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+      companyError = e instanceof Error ? e.message : String(e);
+    }
+
+    // 2. Employee profile (1 credit, only if we have a first name)
+    let employee: EmployeeProfile | null = null;
+    let employeeError: string | null = null;
+    if (prospectFirstName?.trim()) {
+      try {
+        const params: Record<string, string> = { employer_website: website, first_name: prospectFirstName.trim() };
+        if (prospectRole?.trim()) params.role = prospectRole.trim();
+        employee = await np("employee/profile", params, key);
+      } catch (e) {
+        employeeError = e instanceof Error ? e.message : String(e);
+      }
+    }
+
+    if (!company && !employee) {
       return Response.json(
-        { error: `Couldn't pull that LinkedIn profile. It may be private or the URL is wrong. (${msg.slice(0, 120)})` },
+        {
+          error: `Couldn't pull research for ${website}. ${companyError || employeeError || ""}`.slice(0, 250),
+        },
         { status: 404 }
       );
     }
 
-    // 2. Fetch recent posts (best-effort)
-    let posts: Posts["activities"] = [];
-    try {
-      const postsRes: Posts = await px(
-        `/v2/linkedin/profile/posts?linkedin_profile_url=${encodeURIComponent(url)}`,
-        key
-      );
-      posts = (postsRes.activities || []).slice(0, 5);
-    } catch {
-      // not fatal
-    }
-
-    // 3. Fetch current company info (best-effort) using the most recent experience
-    let company: Company | null = null;
-    let companyName: string | undefined;
-    const currentExp = (profile.experiences || [])[0];
-    companyName = currentExp?.company;
-    try {
-      if (companyName) {
-        const search = await px(
-          `/linkedin/company/resolve?company_name=${encodeURIComponent(companyName)}&enrich_profile=enrich`,
-          key
-        );
-        if (search?.url) {
-          const companyRes: Company = await px(
-            `/linkedin/company?url=${encodeURIComponent(search.url)}&use_cache=if-present`,
-            key
-          );
-          company = companyRes;
-        }
-      }
-    } catch {
-      // not fatal
-    }
-
-    // 4. Compose a clean research summary for the LLM
-    const recent = recentExperience(profile);
-    const fundingHits = (company?.funding_data || []).slice(0, 2).map((f) => ({
-      type: f.funding_type,
-      raised: f.money_raised,
-      year: f.announced_date?.year,
-    }));
-    const companyUpdates = (company?.updates || []).slice(0, 3).map((u) => u.text).filter(Boolean);
-
+    // Compose a clean research summary for the LLM
     const research = {
-      profile: {
-        name: profile.full_name || `${profile.first_name || ""} ${profile.last_name || ""}`.trim(),
-        firstName: profile.first_name,
-        headline: profile.headline,
-        currentRole: recent?.title,
-        currentCompany: recent?.company,
-        location: [profile.city, profile.country_full_name].filter(Boolean).join(", "),
-        publicHandle: profile.public_identifier,
-        summary: profile.summary?.slice(0, 600),
-      },
-      posts: posts?.map((p) => ({
-        text: p.title?.slice(0, 400),
-        link: p.link,
-        type: p.activity_status,
-      })) || [],
       company: company
         ? {
             name: company.name,
-            industry: company.industry,
-            description: company.description?.slice(0, 400),
-            sizeRange: company.company_size,
-            funding: fundingHits,
-            recentUpdates: companyUpdates,
+            website: company.website || website,
+            description: company.description?.slice(0, 600),
+            industries: company.industries?.slice(0, 3),
+            employeeCount: company.employee_count,
+            foundedYear: company.founded_year,
+            type: company.company_type,
+            hq: company.addresses?.find((a) => a.is_primary)?.city,
+            keyExecutives: (company.executives || []).slice(0, 6).map((e) => ({
+              name: e.name,
+              title: e.title,
+            })),
           }
         : null,
+      employee: employee
+        ? {
+            name: employee.full_name || `${employee.first_name || ""} ${employee.last_name || ""}`.trim(),
+            firstName: employee.first_name,
+            headline: employee.headline,
+            currentRole: employee.current_position?.title,
+            currentRoleStarted: employee.current_position?.start_date,
+            currentCompany: employee.current_position?.company_name,
+            location: [employee.location?.city, employee.location?.country].filter(Boolean).join(", "),
+            summary: employee.summary?.slice(0, 600),
+            linkedinUrl: employee.linkedin_url,
+            tenureRoles: (employee.positions || []).slice(0, 4).map((p) => ({
+              title: p.title,
+              company: p.company_name,
+              start: p.start_date,
+              end: p.end_date,
+            })),
+          }
+        : null,
+      _diagnostics: {
+        companyError,
+        employeeError,
+      },
     };
 
     return Response.json({ research });

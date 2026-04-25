@@ -22,7 +22,7 @@ export default function ToolPage() {
           Build your <span className="gradient-text">opener.</span>
         </h1>
         <p className="mt-5 text-[17px] md:text-[19px] text-[color:var(--muted-soft)] max-w-2xl mx-auto leading-[1.55]">
-          Drop in your prospect&apos;s LinkedIn. We pull the trigger. Three tailored openers
+          Drop in your prospect&apos;s company. We pull the research. Three tailored openers
           in the Modern Seller voice — each with the tactical reason it works.
         </p>
       </section>

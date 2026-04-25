@@ -20,8 +20,8 @@ export default function Home() {
             Openers <span className="gradient-text">that actually book.</span>
           </h1>
           <p className="mt-7 text-[17px] md:text-[19px] text-[color:var(--muted-soft)] max-w-2xl leading-[1.55]">
-            Paste a prospect&apos;s LinkedIn URL. Get 3 cold-call openers tailored to <em>them</em> —
-            anchored in real triggers from their profile, posts, and company news.
+            Drop in your prospect&apos;s company. Get 3 cold-call openers tailored to <em>them</em> —
+            anchored in real research about their role, company, and recent moves.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <Link href="/tool" className="btn-primary">
@@ -57,7 +57,7 @@ export default function Home() {
         <div className="text-center mb-14">
           <p className="eyebrow mb-3">How it works</p>
           <h2 className="text-3xl md:text-5xl font-bold tracking-[-0.03em] max-w-3xl mx-auto leading-[1.05]">
-            Paste a LinkedIn URL. <span className="gradient-text">Get 3 tailored openers.</span>
+            Drop in their company. <span className="gradient-text">Get 3 tailored openers.</span>
           </h2>
         </div>
 
@@ -65,13 +65,13 @@ export default function Home() {
           {[
             {
               step: "01",
-              title: "Drop the LinkedIn URL",
-              body: "The prospect you're calling. We pull their profile, recent posts, role history, and what their company has been up to lately.",
+              title: "Drop their company",
+              body: "Just the website (e.g. acme.com). Add the prospect's first name and role for sharper targeting.",
             },
             {
               step: "02",
-              title: "We find the trigger",
-              body: "A LinkedIn post, a recent hire, fresh funding, a new product — whatever's actually happening that you can hook into.",
+              title: "We pull the research",
+              body: "What the company does, headcount, key execs, the prospect's role tenure — the same dossier you'd build manually in 20 minutes.",
             },
             {
               step: "03",
@@ -200,11 +200,11 @@ export default function Home() {
             },
             {
               q: "Where does the research come from?",
-              a: "Proxycurl pulls the prospect's public LinkedIn profile, recent posts, role history, and their company's recent moves. Public data only — same stuff you'd find clicking around manually.",
+              a: "We pull public data about the prospect's company (description, headcount, key execs) and — if you give us their first name — their role tenure and prior positions. Same dossier you'd build manually in 20 minutes.",
             },
             {
-              q: "What if there's nothing interesting on their profile?",
-              a: "Then we tell you that, fall back to a tight problem-led opener using their role + company, and ask if you want to add anything you spotted manually.",
+              q: "What if there's no useful research?",
+              a: "Paste anything you noticed (a LinkedIn post, a news mention, a podcast) into the optional notes. We'll fold it into the openers and still give you three angles.",
             },
             {
               q: "Will it write a whole call script?",

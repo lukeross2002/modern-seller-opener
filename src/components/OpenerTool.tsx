@@ -4,24 +4,27 @@ import { useState, useEffect, FormEvent } from "react";
 
 type Opener = { angle: string; line: string; why: string };
 type Research = {
-  profile?: {
+  company?: {
+    name?: string;
+    website?: string;
+    description?: string;
+    industries?: string[];
+    employeeCount?: number;
+    foundedYear?: number;
+    type?: string;
+    hq?: string;
+    keyExecutives?: Array<{ name?: string; title?: string }>;
+  } | null;
+  employee?: {
     name?: string;
     firstName?: string;
     headline?: string;
     currentRole?: string;
     currentCompany?: string;
     location?: string;
-    publicHandle?: string;
     summary?: string;
-  };
-  posts?: Array<{ text?: string; link?: string; type?: string }>;
-  company?: {
-    name?: string;
-    industry?: string;
-    description?: string;
-    sizeRange?: number[];
-    funding?: Array<{ type?: string; raised?: number; year?: number }>;
-    recentUpdates?: string[];
+    linkedinUrl?: string;
+    tenureRoles?: Array<{ title?: string; company?: string; start?: string; end?: string }>;
   } | null;
 };
 
@@ -38,7 +41,9 @@ export default function OpenerTool() {
   const [unlockLoading, setUnlockLoading] = useState(false);
   const [unlockError, setUnlockError] = useState("");
 
-  const [linkedinUrl, setLinkedinUrl] = useState("");
+  const [companyWebsite, setCompanyWebsite] = useState("");
+  const [prospectFirstName, setProspectFirstName] = useState("");
+  const [prospectRole, setProspectRole] = useState("");
   const [yourOffer, setYourOffer] = useState("");
   const [extraNotes, setExtraNotes] = useState("");
 
@@ -93,37 +98,39 @@ export default function OpenerTool() {
     setResearch(null);
     setResearchSummary("");
 
-    const trimmedUrl = linkedinUrl.trim();
-    const hasUrl = trimmedUrl.includes("linkedin.com/in/");
+    const trimmedWebsite = companyWebsite.trim();
     const hasNotes = extraNotes.trim().length > 0;
 
     if (!yourOffer.trim()) {
       setError("Tell us what you sell — one short line.");
       return;
     }
-    if (!hasUrl && !hasNotes) {
-      setError("Paste a LinkedIn URL (linkedin.com/in/...) or some notes about the prospect.");
+    if (!trimmedWebsite && !hasNotes) {
+      setError("Drop the prospect's company website (e.g. acme.com), or paste some notes about them.");
       return;
     }
 
     let researchPayload: Research | null = null;
 
-    if (hasUrl) {
+    if (trimmedWebsite) {
       setStage("researching");
       try {
         const res = await fetch("/api/research", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ linkedinUrl: trimmedUrl }),
+          body: JSON.stringify({
+            companyWebsite: trimmedWebsite,
+            prospectFirstName: prospectFirstName.trim(),
+            prospectRole: prospectRole.trim(),
+          }),
         });
         if (!res.ok) {
           const body = await res.json().catch(() => ({}));
           if (!hasNotes) {
-            setError(body.error || "Couldn't research that profile. Try pasting the URL again or add some notes below.");
+            setError(body.error || "Couldn't research that company. Add some notes below and try again.");
             setStage("idle");
             return;
           }
-          // Has notes fallback — continue without research
         } else {
           const data = await res.json();
           researchPayload = data.research as Research;
@@ -146,7 +153,9 @@ export default function OpenerTool() {
         body: JSON.stringify({
           research: researchPayload,
           yourOffer,
-          fallbackProspect: hasNotes ? extraNotes : undefined,
+          fallbackProspect: hasNotes
+            ? `${prospectFirstName ? "Name: " + prospectFirstName + ". " : ""}${prospectRole ? "Role: " + prospectRole + ". " : ""}${extraNotes}`
+            : undefined,
         }),
       });
       if (!res.ok) {
@@ -206,20 +215,41 @@ export default function OpenerTool() {
     <div className="grid lg:grid-cols-[1fr_1.2fr] gap-5">
       <form onSubmit={handleGenerate} className="card space-y-5">
         <div>
-          <p className="eyebrow mb-2">Step 1 · Your prospect&apos;s LinkedIn</p>
+          <p className="eyebrow mb-2">Step 1 · Their company</p>
           <input
             className="input"
-            placeholder="https://linkedin.com/in/sarah-chen-revops"
-            value={linkedinUrl}
-            onChange={(e) => setLinkedinUrl(e.target.value)}
+            placeholder="acme.com"
+            value={companyWebsite}
+            onChange={(e) => setCompanyWebsite(e.target.value)}
           />
           <p className="mt-2 text-xs text-[color:var(--muted)]">
-            We pull their profile, recent posts, and what their company has been up to. Public data only.
+            We pull what their company does, headcount, key execs, and recent moves.
           </p>
         </div>
 
         <div>
-          <p className="eyebrow mb-2">Step 2 · What you sell</p>
+          <p className="eyebrow mb-2">Step 2 · The prospect (optional but better)</p>
+          <div className="grid grid-cols-2 gap-3">
+            <input
+              className="input"
+              placeholder="First name"
+              value={prospectFirstName}
+              onChange={(e) => setProspectFirstName(e.target.value)}
+            />
+            <input
+              className="input"
+              placeholder="Their role"
+              value={prospectRole}
+              onChange={(e) => setProspectRole(e.target.value)}
+            />
+          </div>
+          <p className="mt-2 text-xs text-[color:var(--muted)]">
+            With both, we pull their profile too — tenure, prior roles, headline.
+          </p>
+        </div>
+
+        <div>
+          <p className="eyebrow mb-2">Step 3 · What you sell</p>
           <input
             className="input"
             placeholder="e.g. AI pipeline review for RevOps teams"
@@ -230,10 +260,10 @@ export default function OpenerTool() {
         </div>
 
         <div>
-          <p className="eyebrow mb-2">Step 3 · Anything else (optional)</p>
+          <p className="eyebrow mb-2">Step 4 · Anything else (optional)</p>
           <textarea
             className="input"
-            placeholder="A quote you noticed, a podcast they were on, an internal trigger event you know about — anything we couldn't get from LinkedIn."
+            placeholder="A LinkedIn post they wrote, a podcast they were on, fresh news, an internal trigger — anything that'll sharpen the opener."
             value={extraNotes}
             onChange={(e) => setExtraNotes(e.target.value)}
           />
@@ -265,7 +295,7 @@ export default function OpenerTool() {
         {isLoading && (
           <div className="card">
             <p className="eyebrow mb-3">
-              {stage === "researching" ? "Researching the prospect…" : "Writing your openers…"}
+              {stage === "researching" ? "Researching the company…" : "Writing your openers…"}
             </p>
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
@@ -281,26 +311,26 @@ export default function OpenerTool() {
 
         {stage === "done" && openers.length > 0 && (
           <>
-            {(researchSummary || research?.profile?.name) && (
+            {(researchSummary || research?.company?.name || research?.employee?.name) && (
               <div className="card">
                 <p className="eyebrow mb-2">What we found</p>
                 <h3 className="text-lg font-semibold tracking-[-0.01em]">
-                  {research?.profile?.name || "Prospect"}
-                  {research?.profile?.currentRole && ` · ${research.profile.currentRole}`}
-                  {research?.profile?.currentCompany && ` @ ${research.profile.currentCompany}`}
+                  {research?.employee?.name || research?.company?.name || "Prospect"}
+                  {research?.employee?.currentRole && ` · ${research.employee.currentRole}`}
+                  {research?.employee?.currentCompany && ` @ ${research.employee.currentCompany}`}
+                  {!research?.employee && research?.company?.name && research?.company?.industries?.[0] && ` · ${research.company.industries[0]}`}
                 </h3>
                 {researchSummary && (
                   <p className="mt-2 text-[color:var(--muted-soft)] leading-relaxed">
                     <span className="text-white font-medium">Strongest signal — </span>{researchSummary}
                   </p>
                 )}
-                {(research?.posts && research.posts.length > 0) && (
-                  <p className="mt-3 text-xs text-[color:var(--muted)]">
-                    Source: {research.posts.length} recent post{research.posts.length === 1 ? "" : "s"}
-                    {research.company?.recentUpdates && research.company.recentUpdates.length > 0 ? ` + ${research.company.recentUpdates.length} company update${research.company.recentUpdates.length === 1 ? "" : "s"}` : ""}
-                    {research.company?.funding && research.company.funding.length > 0 ? ` + funding history` : ""}
-                  </p>
-                )}
+                <p className="mt-3 text-xs text-[color:var(--muted)]">
+                  Source: {[
+                    research?.company && "company details",
+                    research?.employee && "prospect profile",
+                  ].filter(Boolean).join(" + ") || "manual notes"}
+                </p>
               </div>
             )}
 
