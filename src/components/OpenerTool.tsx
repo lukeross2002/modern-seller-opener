@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, FormEvent } from "react";
+import AcceleratorTeasers from "./AcceleratorTeasers";
 
 type Opener = {
   angle: string;
@@ -307,14 +308,17 @@ export default function OpenerTool() {
 
       <div className="space-y-4">
         {!generating && openers.length === 0 && !error && (
-          <div className="card">
-            <p className="eyebrow mb-3">Output</p>
-            <h3 className="text-xl font-semibold tracking-[-0.01em]">3 tailored openers will land here.</h3>
-            <p className="mt-3 text-[color:var(--muted-soft)] leading-relaxed">
-              Each opener arrives with the angle, the trigger we found, the source URL,
-              and the tactical reason it works. Use one as-is, or remix to your voice.
-            </p>
-          </div>
+          <>
+            <div className="card">
+              <p className="eyebrow mb-3">Output</p>
+              <h3 className="text-xl font-semibold tracking-[-0.01em]">3 tailored openers will land here.</h3>
+              <p className="mt-3 text-[color:var(--muted-soft)] leading-relaxed">
+                Each opener arrives with the angle, the trigger we found, the source URL,
+                and the tactical reason it works. Use one as-is, or remix to your voice.
+              </p>
+            </div>
+            <AcceleratorTeasers variant="empty" />
+          </>
         )}
 
         {generating && (
@@ -413,20 +417,8 @@ export default function OpenerTool() {
               </div>
             ))}
 
-            {/* Soft accelerator lead-in — Hormozi: scarcity + dream outcome, not a pushy CTA */}
-            <div className="card">
-              <p className="eyebrow mb-2">If these worked</p>
-              <p className="text-[color:var(--muted-soft)] leading-relaxed">
-                You just used <em>one</em> framework from the Modern Seller Accelerator. The other six handle
-                discovery, objections, multi-thread, and close. <span className="text-white font-medium">10 reps per cohort</span> — hands-on,
-                live cold-calling sessions, real call reviews.
-              </p>
-              <div className="mt-4">
-                <a href="https://modernseller.ai" className="btn-ghost">
-                  See if you&apos;re a fit <span aria-hidden>→</span>
-                </a>
-              </div>
-            </div>
+            {/* The drug-dealer section: 4 next-call tools, each locked behind the Accelerator. */}
+            <AcceleratorTeasers variant="results" />
           </>
         )}
       </div>

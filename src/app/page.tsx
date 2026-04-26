@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import FAQ from "@/components/FAQ";
 
 export default function Home() {
   return (
@@ -27,7 +28,7 @@ export default function Home() {
             <Link href="/tool" className="btn-primary">
               Generate my openers <span aria-hidden>→</span>
             </Link>
-            <Link href="#how" className="btn-ghost">See how it works</Link>
+            <a href="#how" className="btn-ghost">See how it works</a>
           </div>
           <p className="mt-7 text-[12px] tracking-[0.18em] uppercase text-[color:var(--muted)]">
             10-second setup · 3 tailored openers · zero fluff
@@ -266,8 +267,8 @@ export default function Home() {
           <p className="eyebrow mb-3">FAQ</p>
           <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.02em]">A few quick ones.</h2>
         </div>
-        <div className="space-y-3">
-          {[
+        <FAQ
+          items={[
             {
               q: "Is this actually free?",
               a: "Yes. Drop your email and run unlimited openers — they're yours, no catch.",
@@ -296,16 +297,8 @@ export default function Home() {
               q: "Who is this built for?",
               a: "Anyone who cold calls. SDRs, AEs, founders running outbound, agency owners, recruiters — if your calendar depends on cold conversations, it's for you.",
             },
-          ].map(({ q, a }) => (
-            <details key={q} className="card group">
-              <summary className="cursor-pointer list-none flex items-center justify-between gap-4">
-                <span className="font-semibold text-[17px] tracking-[-0.01em]">{q}</span>
-                <span className="text-[24px] leading-none transition-transform group-open:rotate-45" style={{color:"#A892FF"}}>+</span>
-              </summary>
-              <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">{a}</p>
-            </details>
-          ))}
-        </div>
+          ]}
+        />
       </section>
 
       <Footer />
