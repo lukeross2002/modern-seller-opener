@@ -48,9 +48,11 @@ modern-seller-opener/
 │   │       ├── lead/route.ts     ← POST: takes email + first name, subscribes to Kit form
 │   │       └── research/route.ts ← DEPRECATED — leftover from NinjaPear era, can delete
 │   └── components/
-│       ├── Nav.tsx               ← top nav with logo + CTA
-│       ├── Footer.tsx            ← bottom footer
-│       └── OpenerTool.tsx        ← email gate + 4-step form + loading bar + results panel
+│       ├── Nav.tsx                  ← top nav with logo + CTA
+│       ├── Footer.tsx               ← bottom footer
+│       ├── OpenerTool.tsx           ← email gate + 4-step form + loading bar + results panel
+│       ├── AcceleratorTeasers.tsx   ← 4 locked tools (Discovery / Objection / VM / Call Audit) — Hormozi drug-dealer pull, used in OpenerTool empty + results states
+│       └── FAQ.tsx                  ← animated accordion (CSS Grid 0fr→1fr trick) — replaces native <details>
 ├── AGENTS.md                     ← Next.js 16 docs warning (don't override)
 ├── CLAUDE.md                     ← this file
 └── README.md                     ← user-facing setup docs
@@ -108,7 +110,7 @@ In top-to-bottom order:
 5. **Why these are this good** + **The Modern Seller Accelerator** — 2-col positioning cards. The right card is the visually-elevated conversion target with scarcity pill, stat strip (4 weeks / 10 reps / 3–5x meetings), gradient CTA.
 6. **Examples** — 3 hardcoded sample openers (trigger-led / peer-led / problem-led) with "Why it works"
 7. **Big upsell section** — full Hormozi value stack: scarcity pill, headline ("Openers fix the first 10 seconds. The Accelerator fixes everything after."), 6-item value stack, dream outcome line, "Apply for the next cohort" primary CTA, urgency tag
-8. **FAQ** — 6 questions, all reframed to lower objections to the Accelerator
+8. **FAQ** — 7 questions, rendered via `<FAQ>` client component (smooth-animated accordion), all reframed to lower objections to the Accelerator
 9. **Footer**
 
 ### `/tool` (`src/app/tool/page.tsx` + `src/components/OpenerTool.tsx`)
@@ -200,7 +202,7 @@ To list / change: `vercel env ls production` and `vercel env add <NAME> producti
 | Accelerator preview card | Scarcity pill (10 spots) + stat strip (4/10/3-5x) + gradient CTA |
 | Big upsell section | Full MAGIC: scarcity pill + reframed headline + 6-item value stack + dream outcome + "Apply for the next cohort" CTA + urgency tag ("Cohort 01 fills fast · Application takes 60 seconds") |
 | FAQ | Each question pre-answers an Accelerator objection (price, time, differentiation, scarcity, results-time, fit) |
-| Soft CTA after results | "You just used **one** framework from the Accelerator. The other six handle..." — anchors what they used to what they're missing |
+| `<AcceleratorTeasers>` (drug-dealer move) | 4 locked-tool cards (Discovery Q Engine, Objection Rebuttal Engine, Voicemail Script Builder, Live Call Audit) — each badged "In the Accelerator", whole-card clickable to apply, single "Get the rest →" CTA at bottom. Renders in BOTH the OpenerTool empty state AND the post-results state. This is the highest-pressure conversion mechanism on the site. |
 
 ## Domain and deployment
 
@@ -232,3 +234,5 @@ vercel deploy --prod --yes
 - **JSX entity rendering** — React decodes `&apos;` etc. in JSX *static text* but NOT in `{expression}` values. If you put `&apos;` inside a JS string that's then rendered via `{variable}`, it shows as literal `&apos;`. Same for hardcoded openers in arrays. The `decode()` sanitizer in `/api/generate` covers the dynamic case; for hardcoded examples, just use real apostrophes.
 - **Claude doesn't know today's date** unless you tell it. Inject `today` into the system prompt fresh per request, do NOT cache the system block (caching across days = yesterday's date silently used).
 - **Loading bar feel** — never use a linear bar that caps at 95% then freezes. Use an asymptotic curve (`1 - exp(-elapsed/k)`) so the bar always moves but never hits 100% until the actual response lands. Pair with elapsed-second-driven stage labels.
+- **Smooth scroll on hash anchors** — Next.js `<Link href="#section">` for hash anchors uses programmatic scrolling that bypasses the CSS `scroll-behavior: smooth` from globals.css. For same-page anchor jumps, use a plain `<a href="#section">` instead — native browser behavior respects the smooth scroll. The `<Link>` is fine for cross-page hash navigation (`/#section` from another route).
+- **Animating `<details>` is painful** — native HTML `<details>` doesn't support height transitions. The `<FAQ>` component uses the CSS Grid `0fr → 1fr` trick: animate `grid-template-rows` on a wrapper, give the inner div `overflow: hidden`, and the content slides smoothly. Cross-browser, zero dependencies. Use this pattern any time you need to animate "auto height" content.
