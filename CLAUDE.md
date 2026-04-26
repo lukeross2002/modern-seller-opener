@@ -119,10 +119,11 @@ In top-to-bottom order:
 - H1 ("Build your opener.")
 - Subhead ("Drop in your prospect's name and company. We search the live web for fresh signals…")
 - `<OpenerTool />`:
-  - **Email gate** (when not unlocked): "You're one step away." → first name + email form → "Unlock the tool". Submission posts to `/api/lead`.
+  - **Email gate** (when not unlocked): "You're one step away." → first name (required) + email (required) → "Unlock the tool". Stripped of all overpromising — no playbook/cheat-sheet/follow-up promises. Submission posts to `/api/lead`.
   - **Generator form** (when unlocked): 4 steps (company website → first name + last name + role → what you sell → optional notes). Posts to `/api/generate`.
+  - **Empty state** (post-unlock, pre-generation): placeholder card + `<AcceleratorTeasers variant="empty" />` — pre-loads the drug-dealer pull before they even generate.
   - **Loading state**: asymptotic progress bar (`progress = 1 - exp(-elapsed/18s)` — always moves, never hits 100% until response lands) + rotating stage labels driven by elapsed seconds.
-  - **Results state**: research summary card + 3 opener cards (each with angle, freshness tag, line, anchored-to + source link, why-it-works) + soft accelerator CTA at bottom.
+  - **Results state**: research summary card + 3 opener cards (each with angle, freshness tag, line, anchored-to + source link, why-it-works) + `<AcceleratorTeasers variant="results" />`.
 
 ## API routes
 
