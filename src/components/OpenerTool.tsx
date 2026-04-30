@@ -83,6 +83,17 @@ export default function OpenerTool() {
 
   useEffect(() => {
     try {
+      // ?fresh=1 forces a fresh-visitor experience for testing — wipes the
+      // unlock state and skips the localStorage read. Lets Luke verify the
+      // gate flow without fighting persistent localStorage on his own
+      // browsers (which were unlocked from earlier tests).
+      const isFreshTest =
+        typeof window !== "undefined" &&
+        new URLSearchParams(window.location.search).get("fresh") === "1";
+      if (isFreshTest) {
+        localStorage.removeItem("ms_lead");
+        return;
+      }
       const saved = localStorage.getItem("ms_lead");
       if (!saved) return;
       const parsed = JSON.parse(saved);
