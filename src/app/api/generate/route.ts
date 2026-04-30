@@ -91,6 +91,60 @@ Respond with valid JSON in this exact shape and nothing else:
   ]
 }`;
 
+// Best-effort fixer for the JSON shapes Claude occasionally emits that
+// JSON.parse rejects. Walks the string char by char with a tiny state
+// machine that knows whether we're inside a string literal, and:
+//   - escapes raw control characters (newlines, tabs, etc.) inside string
+//     values so JSON.parse accepts them
+//   - strips trailing commas before } or ]
+// Does NOT try to "fix" actual structural damage — if braces are unbalanced,
+// the parse will still fail and we'll fall through to the retry.
+function repairJson(input: string): string {
+  let out = "";
+  let inString = false;
+  let escape = false;
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (escape) {
+      out += ch;
+      escape = false;
+      continue;
+    }
+    if (ch === "\\" && inString) {
+      out += ch;
+      escape = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      out += ch;
+      continue;
+    }
+    if (inString) {
+      // Escape raw control characters that JSON.parse rejects inside strings.
+      const code = ch.charCodeAt(0);
+      if (code === 0x0a) { out += "\\n"; continue; }
+      if (code === 0x0d) { out += "\\r"; continue; }
+      if (code === 0x09) { out += "\\t"; continue; }
+      if (code === 0x08) { out += "\\b"; continue; }
+      if (code === 0x0c) { out += "\\f"; continue; }
+      if (code < 0x20) { out += "\\u" + code.toString(16).padStart(4, "0"); continue; }
+      out += ch;
+      continue;
+    }
+    // Outside strings — strip trailing commas before } or ].
+    if (ch === ",") {
+      let j = i + 1;
+      while (j < input.length && /\s/.test(input[j])) j++;
+      if (input[j] === "}" || input[j] === "]") {
+        continue; // drop the trailing comma
+      }
+    }
+    out += ch;
+  }
+  return out;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -132,62 +186,91 @@ For every fact you find, verify the source's published date. Compute the days si
 
 Respond with the JSON object only, no markdown, no commentary. Cite the source URL for every opener with a real trigger.`;
 
-    const stream = await client.messages.stream({
-      model: "claude-sonnet-4-6",
-      // 2400 (was 1600) — 1600 was empirically tight, leading to mid-JSON truncation
-      // when web-search context filled the budget. 2400 gives breathing room for 3
-      // openers + research_summary + tool blocks without hitting maxDuration.
-      max_tokens: 2400,
-      tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 2 }],
-      system: [
-        // Don't cache the system block since `today` changes daily — caching across days
-        // would burn the cache and inject the wrong date silently.
-        { type: "text", text: SYSTEM_TEMPLATE(today) },
-      ],
-      messages: [{ role: "user", content: userMsg }],
-    });
+    // Try the Claude call up to 2 times. Most "malformed response" failures are
+    // transient — Claude occasionally formats output in ways our parser can't
+    // recover from (raw newlines in strings, prose around the JSON, etc.).
+    // A second attempt almost always returns clean JSON, and the user never
+    // sees the failure.
+    type ParseResult =
+      | { ok: true; parsed: { openers?: Opener[]; research_summary?: string } }
+      | { ok: false; reason: string; rawPreview: string; stopReason: string | null };
 
-    const finalMessage = await stream.finalMessage();
-    const stopReason = finalMessage.stop_reason;
+    async function attemptGenerate(attemptIdx: number): Promise<ParseResult> {
+      const stream = await client.messages.stream({
+        model: "claude-sonnet-4-6",
+        max_tokens: 2400,
+        // First attempt: 2 web_search uses. Retry: 1 use to stay well within the
+        // 90s function ceiling even after the first attempt's web-search latency.
+        tools: [{ type: "web_search_20260209", name: "web_search", max_uses: attemptIdx === 0 ? 2 : 1 }],
+        system: [{ type: "text", text: SYSTEM_TEMPLATE(today) }],
+        messages: [{ role: "user", content: userMsg }],
+      });
+      const finalMessage = await stream.finalMessage();
+      const stopReason = finalMessage.stop_reason;
+      const textBlock = finalMessage.content.find((b) => b.type === "text");
+      const raw = textBlock && textBlock.type === "text" ? textBlock.text : "";
 
-    const textBlock = finalMessage.content.find((b) => b.type === "text");
-    const raw = textBlock && textBlock.type === "text" ? textBlock.text : "";
+      if (stopReason === "max_tokens") {
+        return { ok: false, reason: "max_tokens", rawPreview: raw.slice(0, 600), stopReason };
+      }
 
-    // If Claude hit the token ceiling mid-output, JSON will be truncated and
-    // never recoverable. Surface a clearer message instead of "malformed".
-    if (stopReason === "max_tokens") {
-      console.error("[/api/generate] hit max_tokens. raw:", raw.slice(0, 800));
-      return Response.json(
-        { error: "Response was cut short. Try again — usually works on a retry." },
-        { status: 502 }
-      );
+      // Strip markdown fences and isolate the outermost JSON object.
+      let cleanedRaw = raw.trim();
+      if (cleanedRaw.startsWith("```")) {
+        cleanedRaw = cleanedRaw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+      }
+      const jsonStart = cleanedRaw.indexOf("{");
+      const jsonEnd = cleanedRaw.lastIndexOf("}");
+      let jsonStr = jsonStart >= 0 && jsonEnd > jsonStart ? cleanedRaw.slice(jsonStart, jsonEnd + 1) : cleanedRaw;
+
+      try {
+        return { ok: true, parsed: JSON.parse(jsonStr) };
+      } catch {
+        // Lenient repair pass — handle the common JSON breakers Claude emits:
+        // raw control characters inside string values, and trailing commas.
+        // Belt-and-suspenders before falling through to a retry.
+        try {
+          const repaired = repairJson(jsonStr);
+          return { ok: true, parsed: JSON.parse(repaired) };
+        } catch (parseErr) {
+          return {
+            ok: false,
+            reason: parseErr instanceof Error ? parseErr.message : String(parseErr),
+            rawPreview: raw.slice(0, 600),
+            stopReason,
+          };
+        }
+      }
     }
 
-    // Strip markdown code fences if Claude wrapped the JSON in them.
-    let cleanedRaw = raw.trim();
-    if (cleanedRaw.startsWith("```")) {
-      cleanedRaw = cleanedRaw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+    let result = await attemptGenerate(0);
+    if (!result.ok) {
+      console.warn("[/api/generate] attempt 1 failed, retrying once.", {
+        reason: result.reason,
+        stopReason: result.stopReason,
+        rawPreview: result.rawPreview,
+      });
+      result = await attemptGenerate(1);
     }
 
-    const jsonStart = cleanedRaw.indexOf("{");
-    const jsonEnd = cleanedRaw.lastIndexOf("}");
-    const jsonStr = jsonStart >= 0 && jsonEnd > jsonStart ? cleanedRaw.slice(jsonStart, jsonEnd + 1) : cleanedRaw;
-
-    let parsed: { openers?: Opener[]; research_summary?: string } = {};
-    try {
-      parsed = JSON.parse(jsonStr);
-    } catch (parseErr) {
-      console.error("[/api/generate] JSON parse failed.", {
-        stopReason,
-        rawLength: raw.length,
-        rawPreview: raw.slice(0, 800),
-        parseErr: parseErr instanceof Error ? parseErr.message : String(parseErr),
+    if (!result.ok) {
+      console.error("[/api/generate] both attempts failed.", {
+        reason: result.reason,
+        stopReason: result.stopReason,
+        rawPreview: result.rawPreview,
       });
       return Response.json(
-        { error: "The model returned a malformed response. Try again.", raw: raw.slice(0, 500) },
+        {
+          error:
+            result.reason === "max_tokens"
+              ? "Response was cut short twice. Try a simpler prospect or try again in a moment."
+              : "The model returned a malformed response twice. Please try again.",
+        },
         { status: 502 }
       );
     }
+
+    const parsed = result.parsed;
 
     const openers = Array.isArray(parsed.openers) ? parsed.openers.slice(0, 3) : [];
     if (openers.length === 0) {
