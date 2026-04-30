@@ -89,76 +89,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Why these openers are this good — proof of the bigger system */}
-      <section className="mx-auto max-w-6xl px-6 pt-28">
-        <div className="grid md:grid-cols-2 gap-5">
-          <div className="card">
-            <p className="eyebrow mb-3">Why these are this good</p>
-            <h3 className="text-2xl font-bold tracking-[-0.02em]">You&apos;re seeing the framework, not the system.</h3>
-            <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
-              This tool runs <em>one</em> framework from the Modern Seller Accelerator —
-              the research-and-write loop that produces openers that actually book.
-            </p>
-            <p className="mt-3 text-[color:var(--muted-soft)] leading-relaxed">
-              The opener is 10 seconds of a 10-minute call. The Accelerator drills you on the other
-              9 minutes 50: discovery, objections, multi-thread, close. Same framework quality. Same voice.
-              Applied to the entire conversation.
-            </p>
-          </div>
-          <div className="card relative overflow-hidden">
-            {/* Layered radial glows for visual depth */}
-            <div
-              className="absolute inset-0 pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(ellipse at top right, rgba(141,123,255,0.28), transparent 60%), radial-gradient(ellipse 60% 40% at bottom left, rgba(90,161,255,0.14), transparent 70%)",
-              }}
-            />
-
-            <div className="relative">
-              {/* Scarcity pill */}
-              <div className="pill mb-5">
-                <span className="dot" /> 10 spots per cohort
-              </div>
-
-              <p className="eyebrow mb-3">The Modern Seller Accelerator</p>
-
-              <h3 className="text-[26px] md:text-[30px] font-bold tracking-[-0.025em] leading-[1.08]">
-                Live calls,<br />
-                <span className="gradient-text">not slide decks.</span>
-              </h3>
-
-              {/* Stat strip — visual landmark */}
-              <div className="mt-7 grid grid-cols-3 gap-3 py-5 border-y border-[color:var(--border)]">
-                {[
-                  { n: "4", l: "Weeks" },
-                  { n: "10", l: "Reps" },
-                  { n: "3–5x", l: "Meetings" },
-                ].map(({ n, l }) => (
-                  <div key={l} className="text-center">
-                    <div className="text-[26px] md:text-[28px] font-bold gradient-text leading-none">
-                      {n}
-                    </div>
-                    <div className="mt-2 text-[10px] tracking-[0.18em] uppercase text-[color:var(--muted)]">
-                      {l}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <p className="mt-5 text-[color:var(--muted-soft)] leading-relaxed">
-                Twice-weekly live cold-calling sessions. The full playbook. AI pre-call research,
-                AI call audits, direct Slack access. Hands-on, not theory.
-              </p>
-
-              {/* Primary CTA — gradient, draws the eye */}
-              <div className="mt-7">
-                <Link href="https://modernseller.ai" className="btn-primary">
-                  Apply for the next cohort <span aria-hidden>→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
+      {/* Why these openers are this good — light context, no pitch */}
+      <section className="mx-auto max-w-4xl px-6 pt-28">
+        <div className="card">
+          <p className="eyebrow mb-3">Why these are this good</p>
+          <h3 className="text-2xl font-bold tracking-[-0.02em]">Real research beats clever scripts.</h3>
+          <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
+            Most opener generators just remix templates. This one searches the live web for the
+            prospect — recent posts, podcasts, funding, hires — and anchors every line to a dated,
+            verifiable trigger. You get an opener that sounds like you actually did your homework,
+            because you did.
+          </p>
         </div>
       </section>
 
@@ -174,22 +115,34 @@ export default function Home() {
           {[
             {
               angle: "Trigger-led",
-              line: "“Sarah, saw your post yesterday about RevOps spending Friday afternoons cleaning pipeline data — curious, is that the prep work itself or the deal-data quality?”",
-              why: "Named-trigger opener. Quoting her own post earns the next 20 seconds. The fork in the question forces a real answer, not a brush-off.",
+              who: "James · Founder, Series-B SaaS",
+              trigger: "Funding announcement (TechCrunch, 3 days ago)",
+              line: "“James — saw the Series B drop on TechCrunch Tuesday, congrats. The 8-figure founders we work with all wrestle with the same hire-fast/keep-CAC-down trade-off in the first 90 days post-raise. Where is that landing for you right now?”",
+              why: "Names a dated, public trigger he'll instantly recognize. The bracketed problem mirrors what he's privately wrestling with, which earns the next 30 seconds.",
             },
             {
               angle: "Peer-led",
-              line: "“Sarah — quick one. The RevOps lead at <peer co> hit the same Friday-pipeline issue last quarter and we got their afternoons back. Worth two minutes to sketch how?”",
-              why: "Peer anchor borrows credibility. The specific outcome (Friday afternoons back) makes it concrete instead of vague pitch language.",
+              who: "Priya · Head of CX, mid-market SaaS",
+              trigger: "LinkedIn post about churn spike (last month)",
+              line: "“Priya, quick one. The CX lead at Gainsight had the same Q1 churn spike you posted about last month — we cut their voluntary churn by 18% in one quarter. Worth two minutes for me to sketch how, or is it a bad time?”",
+              why: "Peer anchor borrows credibility from a name she respects. Specific outcome (18%, one quarter) beats vague pitch language. Soft-no close gives her an out, which paradoxically gets more yeses.",
             },
             {
               angle: "Problem-led",
-              line: "“Sarah, every Head of RevOps I’ve talked to this quarter is fighting the same fire — pipeline review takes a full Friday and the data still feels off. Sound familiar, or are you the exception?”",
-              why: "Named-pain framing + soft-no question. Inviting her to disagree gets a real answer faster than asking for permission.",
+              who: "Marcus · VP Sales, $80M manufacturer",
+              trigger: "Industry pattern (no public signal)",
+              line: "“Marcus, every VP Sales at a $50–100M manufacturer I've talked to this year is fighting the same thing — quote-to-cash takes 3 weeks and deals are dying in legal review. Sound familiar, or are you the exception?”",
+              why: "When there's no public trigger to anchor to, named-pain framing does the work. The 'are you the exception' close invites him to disagree, which is a faster path to a real conversation than asking permission.",
             },
-          ].map(({ angle, line, why }) => (
+          ].map(({ angle, who, trigger, line, why }) => (
             <div key={angle} className="opener-card">
-              <div className="text-[11px] tracking-[0.2em] uppercase font-semibold" style={{color:"#A892FF"}}>{angle}</div>
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <div className="text-[11px] tracking-[0.2em] uppercase font-semibold" style={{color:"#A892FF"}}>{angle}</div>
+                <div className="text-[10px] tracking-[0.18em] uppercase text-[color:var(--muted)] font-medium px-2 py-1 rounded-full border border-[color:var(--border)] bg-white/[0.02]">
+                  {trigger}
+                </div>
+              </div>
+              <div className="text-[12px] tracking-[0.05em] text-[color:var(--muted)] mt-2">{who}</div>
               <p className="mt-3 text-[17px] leading-relaxed">{line}</p>
               <div className="divider my-5" />
               <p className="text-sm text-[color:var(--muted-soft)]"><span className="text-white font-medium">Why it works — </span>{why}</p>
@@ -203,61 +156,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Accelerator upsell — Hormozi: scarcity, value stack, dream outcome, low-friction CTA */}
-      <section id="cohort" className="mx-auto max-w-6xl px-6 pt-28">
-        <div className="card text-center relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none opacity-60" style={{
-            background: "radial-gradient(ellipse at bottom, rgba(141,123,255,0.18), transparent 65%)",
-          }} />
-          <div className="relative">
-            <div className="pill mb-4">
-              <span className="dot" /> 10 spots per cohort · By application
-            </div>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-[-0.03em] max-w-3xl mx-auto leading-[1.05]">
-              Openers fix the first 10 seconds. <br className="hidden md:block" />
-              <span className="gradient-text">The Accelerator fixes everything after.</span>
-            </h2>
-            <p className="mt-6 text-[17px] text-[color:var(--muted-soft)] max-w-2xl mx-auto leading-relaxed">
-              4 weeks. 10 reps only. Built for the rep who&apos;s tired of winging it and ready to install
-              a system that books meetings on repeat.
-            </p>
-
-            {/* Value stack */}
-            <div className="mt-8 max-w-2xl mx-auto text-left grid sm:grid-cols-2 gap-x-8 gap-y-3 text-[15px]">
-              {[
-                "8 live cold-calling sessions with Luke",
-                "The full Cold Call Playbook (every framework)",
-                "AI pre-call research tool (better than this one)",
-                "AI call audit tool — every dial reviewed",
-                "Direct Slack access · 7 days a week",
-                "Live objection-handling drills",
-              ].map((item) => (
-                <div key={item} className="flex gap-3 items-start">
-                  <span className="mt-1 flex-shrink-0" style={{ color: "#A892FF" }}>—</span>
-                  <span className="text-[color:var(--muted-soft)]">{item}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="mt-8 text-[15px] text-[color:var(--muted-soft)] max-w-xl mx-auto">
-              Reps who run the system book{" "}
-              <span className="text-white font-semibold">3–5x more meetings</span>{" "}
-              inside the first month.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link href="https://modernseller.ai" className="btn-primary">
-                Apply for the next cohort <span aria-hidden>→</span>
-              </Link>
-              <Link href="https://modernseller.ai" className="btn-ghost">
-                See full curriculum
-              </Link>
-            </div>
-
-            <p className="mt-5 text-xs tracking-[0.18em] uppercase text-[color:var(--muted)]">
-              Cohort 01 fills fast · Application takes 60 seconds
-            </p>
-          </div>
+      {/* Soft footer mention — single line, no value stack, no scarcity push */}
+      <section id="cohort" className="mx-auto max-w-3xl px-6 pt-28">
+        <div className="text-center">
+          <p className="text-[15px] text-[color:var(--muted-soft)] leading-relaxed">
+            Want help with the other 9 minutes 50 of the call? Luke runs a small hands-on
+            program at{" "}
+            <Link href="https://modernseller.ai" className="text-[color:var(--grad-2)] hover:text-white underline underline-offset-2">
+              modernseller.ai
+            </Link>
+            .
+          </p>
         </div>
       </section>
 
@@ -271,27 +180,27 @@ export default function Home() {
           items={[
             {
               q: "Is this actually free?",
-              a: "Yes. Drop your email and run unlimited openers — they're yours, no catch.",
+              a: "Yes. Run unlimited openers — they're yours, no catch.",
             },
             {
               q: "Where does the research come from?",
               a: "Live web search. Recent posts, podcasts, press releases, funding news, exec hires — whatever's actually public about the prospect and their company. Each opener cites the source URL so you can verify it before you dial.",
             },
             {
+              q: "How recent is the research?",
+              a: "As fresh as the web is. We pull live results at the moment you click generate, so a post from this morning is fair game. Each opener tags how recent the trigger is.",
+            },
+            {
+              q: "Will it sound like a robot wrote it?",
+              a: "It's tuned to a direct, conversational voice — not corporate sales-speak. You'll still want to read it out loud and tweak a word or two so it lands in your accent. The framework is the value, not the exact phrasing.",
+            },
+            {
               q: "Will it write a whole call script?",
-              a: "No. It writes the opener — the first 10 seconds. Discovery, objections, the close — that's the Accelerator.",
+              a: "No. It writes the opener — the first 10 seconds. Use it as the door-opener, then run your own discovery from there.",
             },
             {
-              q: "How is the Accelerator different from generic sales training?",
-              a: "Generic training gives you frameworks on a slide deck. The Accelerator is hands-on — live cold-calling sessions twice a week, real call reviews from me, and a cohort that calls together. You don't learn cold calling from theory. You learn it on the phone.",
-            },
-            {
-              q: "How many spots are in each cohort?",
-              a: "10 reps. That's the cap — fewer reps means more 1-on-1 time on each live session. It's why we don't scale it.",
-            },
-            {
-              q: "How fast do reps see results?",
-              a: "Most reps book 3–5x more meetings inside the first month. Week 1 installs the playbook. Weeks 2–4 are live calls + coaching. By the end you have a system, not a script you read.",
+              q: "Will my data be saved or shared?",
+              a: "Prospect details aren't stored after the openers are generated. We only keep the email you use to unlock the tool, so we can send you a copy.",
             },
             {
               q: "Who is this built for?",

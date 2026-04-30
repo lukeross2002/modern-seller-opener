@@ -15,7 +15,7 @@ export default function Nav() {
           <Link href="/#how" className="hover:text-white transition-colors">How it works</Link>
           <Link href="/#examples" className="hover:text-white transition-colors">Examples</Link>
           <Link href="https://modernseller.ai#luke" className="hover:text-white transition-colors">Meet Luke</Link>
-          <Link href="https://modernseller.ai#tiers" className="hover:text-white transition-colors">Tiers</Link>
+          <Link href="https://modernseller.ai#pricing" className="hover:text-white transition-colors">Tiers</Link>
           <Link href="/#faq" className="hover:text-white transition-colors">FAQ</Link>
         </nav>
         <Link href="/tool" className="btn-nav">
