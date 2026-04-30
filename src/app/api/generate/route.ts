@@ -134,7 +134,10 @@ Respond with the JSON object only, no markdown, no commentary. Cite the source U
 
     const stream = await client.messages.stream({
       model: "claude-sonnet-4-6",
-      max_tokens: 1600,
+      // 2400 (was 1600) — 1600 was empirically tight, leading to mid-JSON truncation
+      // when web-search context filled the budget. 2400 gives breathing room for 3
+      // openers + research_summary + tool blocks without hitting maxDuration.
+      max_tokens: 2400,
       tools: [{ type: "web_search_20260209", name: "web_search", max_uses: 2 }],
       system: [
         // Don't cache the system block since `today` changes daily — caching across days
@@ -145,18 +148,41 @@ Respond with the JSON object only, no markdown, no commentary. Cite the source U
     });
 
     const finalMessage = await stream.finalMessage();
+    const stopReason = finalMessage.stop_reason;
 
     const textBlock = finalMessage.content.find((b) => b.type === "text");
     const raw = textBlock && textBlock.type === "text" ? textBlock.text : "";
 
-    const jsonStart = raw.indexOf("{");
-    const jsonEnd = raw.lastIndexOf("}");
-    const jsonStr = jsonStart >= 0 && jsonEnd > jsonStart ? raw.slice(jsonStart, jsonEnd + 1) : raw;
+    // If Claude hit the token ceiling mid-output, JSON will be truncated and
+    // never recoverable. Surface a clearer message instead of "malformed".
+    if (stopReason === "max_tokens") {
+      console.error("[/api/generate] hit max_tokens. raw:", raw.slice(0, 800));
+      return Response.json(
+        { error: "Response was cut short. Try again — usually works on a retry." },
+        { status: 502 }
+      );
+    }
+
+    // Strip markdown code fences if Claude wrapped the JSON in them.
+    let cleanedRaw = raw.trim();
+    if (cleanedRaw.startsWith("```")) {
+      cleanedRaw = cleanedRaw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+    }
+
+    const jsonStart = cleanedRaw.indexOf("{");
+    const jsonEnd = cleanedRaw.lastIndexOf("}");
+    const jsonStr = jsonStart >= 0 && jsonEnd > jsonStart ? cleanedRaw.slice(jsonStart, jsonEnd + 1) : cleanedRaw;
 
     let parsed: { openers?: Opener[]; research_summary?: string } = {};
     try {
       parsed = JSON.parse(jsonStr);
-    } catch {
+    } catch (parseErr) {
+      console.error("[/api/generate] JSON parse failed.", {
+        stopReason,
+        rawLength: raw.length,
+        rawPreview: raw.slice(0, 800),
+        parseErr: parseErr instanceof Error ? parseErr.message : String(parseErr),
+      });
       return Response.json(
         { error: "The model returned a malformed response. Try again.", raw: raw.slice(0, 500) },
         { status: 502 }
