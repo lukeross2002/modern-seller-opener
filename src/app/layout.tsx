@@ -8,17 +8,27 @@ const inter = Inter({
   display: "swap",
 });
 
+// metadataBase resolves all relative OG URLs (including the auto-generated
+// opengraph-image) against this domain. Without it, Next falls back to the
+// Vercel deploy URL or localhost, which breaks LinkedIn/X previews.
 export const metadata: Metadata = {
-  title: "Modern Seller · Opener Generator — Cold call openers that actually book",
+  metadataBase: new URL("https://opener.modernseller.ai"),
+  title: "Cold-call openers that actually book — Modern Seller",
   description:
-    "Free tool from Modern Seller. Paste a prospect, get 5 tailored cold-call openers in seconds — built on the playbook trained on 50,000+ real calls.",
+    "Free tool. Drop in your prospect's name + company. Get 3 tailored cold-call openers anchored in live web research — built by Luke Ross, founder of Modern Seller.",
   openGraph: {
-    title: "Cold call openers that actually book — Modern Seller",
+    title: "Cold-call openers that actually book — Modern Seller",
     description:
-      "Free opener generator. Paste a prospect, get 5 tailored openers built from the Modern Seller playbook.",
-    url: "https://modernseller.ai",
+      "Free tool. Drop in your prospect's name + company. Get 3 tailored cold-call openers anchored in live web research.",
+    url: "https://opener.modernseller.ai",
     siteName: "Modern Seller",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Cold-call openers that actually book — Modern Seller",
+    description:
+      "Drop in your prospect's name + company. Get 3 tailored cold-call openers anchored in live web research.",
   },
 };
 
