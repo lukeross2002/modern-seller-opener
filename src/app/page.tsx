@@ -156,17 +156,39 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Soft footer mention — single line, no value stack, no scarcity push */}
-      <section id="cohort" className="mx-auto max-w-3xl px-6 pt-28">
-        <div className="text-center">
-          <p className="text-[15px] text-[color:var(--muted-soft)] leading-relaxed">
-            Want help with the other 9 minutes 50 of the call? Luke runs a small hands-on
-            program at{" "}
-            <Link href="https://modernseller.ai" className="text-[color:var(--grad-2)] hover:text-white underline underline-offset-2">
-              modernseller.ai
-            </Link>
-            .
-          </p>
+      {/* Restrained Accelerator card — scarcity in the pill, no value stack */}
+      <section id="cohort" className="mx-auto max-w-2xl px-6 pt-28">
+        <div className="card relative overflow-hidden text-center">
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse at top, rgba(141,123,255,0.18), transparent 60%)",
+            }}
+          />
+          <div className="relative">
+            <div className="pill mb-5">
+              <span className="dot" /> 10 spots per cohort · By application
+            </div>
+            <h3
+              className="font-bold tracking-[-0.025em] leading-[1.12]"
+              style={{ fontSize: "clamp(1.55rem, 3.2vw, 2rem)" }}
+            >
+              Want help with <span className="gradient-text">the other 9 minutes 50?</span>
+            </h3>
+            <p className="mt-5 text-[color:var(--muted-soft)] leading-relaxed max-w-lg mx-auto">
+              Luke runs the Accelerator — 4 weeks, 10 reps, twice-weekly live cold-calling sessions
+              and real call reviews. Hands-on, not theory.
+            </p>
+            <div className="mt-7">
+              <Link href="https://modernseller.ai" className="btn-primary">
+                See if there&apos;s a spot <span aria-hidden>→</span>
+              </Link>
+            </div>
+            <p className="mt-4 text-[11px] tracking-[0.18em] uppercase text-[color:var(--muted)]">
+              Application takes 60 seconds
+            </p>
+          </div>
         </div>
       </section>
 
@@ -191,12 +213,8 @@ export default function Home() {
               a: "As fresh as the web is. We pull live results at the moment you click generate, so a post from this morning is fair game. Each opener tags how recent the trigger is.",
             },
             {
-              q: "Will it sound like a robot wrote it?",
-              a: "It's tuned to a direct, conversational voice — not corporate sales-speak. You'll still want to read it out loud and tweak a word or two so it lands in your accent. The framework is the value, not the exact phrasing.",
-            },
-            {
               q: "Will it write a whole call script?",
-              a: "No. It writes the opener — the first 10 seconds. Use it as the door-opener, then run your own discovery from there.",
+              a: "No. The opener is the first 10 seconds — that's what this tool nails. Discovery, objection-handling, and the close are the full system Luke teaches inside the Accelerator.",
             },
             {
               q: "Will my data be saved or shared?",
