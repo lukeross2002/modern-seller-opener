@@ -95,10 +95,9 @@ export default function Home() {
           <p className="eyebrow mb-3">Why these are this good</p>
           <h3 className="text-2xl font-bold tracking-[-0.02em]">Real research beats clever scripts.</h3>
           <p className="mt-4 text-[color:var(--muted-soft)] leading-relaxed">
-            Most opener generators just remix templates. This one searches the live web for the
-            prospect — recent posts, podcasts, funding, hires — and anchors every line to a dated,
-            verifiable trigger. You get an opener that sounds like you actually did your homework,
-            because you did.
+            Most opener tools remix templates. This one searches the live web for the actual prospect.
+            Recent posts, podcasts, funding, hires. Every line anchors to a real, dated trigger with
+            a source you can verify. The opener sounds like you did your homework because you did.
           </p>
         </div>
       </section>
@@ -177,9 +176,9 @@ export default function Home() {
               Book <span className="gradient-text">3–5x more meetings</span> in 4 weeks.
             </h3>
             <p className="mt-5 text-[color:var(--muted-soft)] leading-relaxed max-w-lg mx-auto">
-              The complete cold-calling system, drilled live with Luke twice a week —
-              research, opener, discovery, objection handling, close. Every step worked
-              through until it lands on instinct.
+              4 weeks. Twice a week you&apos;re on the phone with me making real cold calls live.
+              I tell you what&apos;s working and what isn&apos;t. Research, opener, discovery,
+              objections, close.
             </p>
             <div className="mt-7">
               <Link href="https://modernseller.ai" className="btn-primary">
@@ -203,27 +202,27 @@ export default function Home() {
           items={[
             {
               q: "Is this actually free?",
-              a: "Yes. Run unlimited openers — they're yours, no catch.",
+              a: "Yes. Unlimited openers, no catch.",
             },
             {
               q: "Where does the research come from?",
-              a: "Live web search. Recent posts, podcasts, press releases, funding news, exec hires — whatever's actually public about the prospect and their company. Each opener cites the source URL so you can verify it before you dial.",
+              a: "Live web search. Recent posts, podcasts, press releases, funding news, exec hires. Anything public about the prospect or their company. Each opener cites the source so you can verify it before you dial.",
             },
             {
               q: "How recent is the research?",
-              a: "As fresh as the web is. We pull live results at the moment you click generate, so a post from this morning is fair game. Each opener tags how recent the trigger is.",
+              a: "As fresh as the web is. Live results pulled the moment you click generate. A post from this morning is fair game. Each opener tags how recent the trigger is.",
             },
             {
               q: "Will it write a whole call script?",
-              a: "No. The opener is the first 10 seconds — that's what this tool nails. Discovery, objection-handling, and the close are the full system Luke teaches inside the Accelerator.",
+              a: "No. Just the opener. The first 10 seconds. The rest of the call is on you. If you want help with the rest, that's what Modern Seller is for.",
             },
             {
               q: "Will my data be saved or shared?",
-              a: "Prospect details aren't stored after the openers are generated. We only keep the email you use to unlock the tool, so we can send you a copy.",
+              a: "Your prospect details aren't saved. The only thing kept is the email you used to unlock the tool, so a copy can be sent to your inbox.",
             },
             {
               q: "Who is this built for?",
-              a: "Anyone who cold calls. SDRs, AEs, founders running outbound, agency owners, recruiters — if your calendar depends on cold conversations, it's for you.",
+              a: "Anyone who cold calls. SDRs, AEs, founders running outbound, agency owners, recruiters. If your calendar depends on cold conversations, it's for you.",
             },
           ]}
         />
