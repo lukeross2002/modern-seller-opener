@@ -176,7 +176,8 @@ export default function Home() {
               Book <span className="gradient-text">3–5x more meetings</span> in 4 weeks.
             </h3>
             <p className="mt-5 text-[color:var(--muted-soft)] leading-relaxed max-w-lg mx-auto">
-              8 live sessions with me. Every one ends with something built, tested, and working.
+              Not a course. Not theory. 8 live sessions where you build, test, and run a
+              cold-calling system that books meetings.
             </p>
             <div className="mt-7">
               <Link href="https://modernseller.ai" className="btn-primary">
