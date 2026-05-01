@@ -174,11 +174,12 @@ export default function Home() {
               className="font-bold tracking-[-0.025em] leading-[1.12]"
               style={{ fontSize: "clamp(1.55rem, 3.2vw, 2rem)" }}
             >
-              Want help with <span className="gradient-text">the other 9 minutes 50?</span>
+              Book <span className="gradient-text">3–5x more meetings</span> in 4 weeks.
             </h3>
             <p className="mt-5 text-[color:var(--muted-soft)] leading-relaxed max-w-lg mx-auto">
-              Luke runs the Accelerator — 4 weeks, 10 reps, twice-weekly live cold-calling sessions
-              and real call reviews. Hands-on, not theory.
+              The complete cold-calling system, drilled live with Luke twice a week —
+              research, opener, discovery, objection handling, close. Every step worked
+              through until it lands on instinct.
             </p>
             <div className="mt-7">
               <Link href="https://modernseller.ai" className="btn-primary">
