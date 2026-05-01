@@ -175,16 +175,9 @@ export default function Home() {
             >
               Book <span className="gradient-text">3–5x more meetings</span> in 4 weeks.
             </h3>
-            <div className="mt-5 text-[color:var(--muted-soft)] leading-relaxed max-w-lg mx-auto space-y-4">
-              <p>4 weeks. 8 live sessions with me, twice a week.</p>
-              <p>
-                Week 1 you build your full cold call playbook.<br />
-                Week 2 you test your opener live until it lands.<br />
-                Week 3 every objection gets thrown at you until you handle them all.<br />
-                Week 4 you plug in the AI. Pre-call research and call audits.
-              </p>
-              <p>Every session ends with something built, tested, and working.</p>
-            </div>
+            <p className="mt-5 text-[color:var(--muted-soft)] leading-relaxed max-w-lg mx-auto">
+              8 live sessions with me. Every one ends with something built, tested, and working.
+            </p>
             <div className="mt-7">
               <Link href="https://modernseller.ai" className="btn-primary">
                 See if there&apos;s a spot <span aria-hidden>→</span>
